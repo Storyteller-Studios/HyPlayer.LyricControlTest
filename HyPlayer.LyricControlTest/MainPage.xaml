@@ -1,0 +1,17 @@
+﻿<Page
+    x:Class="HyPlayer.LyricControlTest.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:HyPlayer.LyricControlTest"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:view="using:HyPlayer.LyricControlTest.LyricListView"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    muxc:BackdropMaterial.ApplyToRootOrPageBackground="True"
+    xmlns:models="using:HyPlayer.LyricControlTest.Lyric"
+    xmlns:ui="using:Microsoft.Toolkit.Uwp.UI">
+    <Grid Margin="0,0">
+        <view:LyricListView LyricLines="{x:Bind ViewModel.LyricLines}"  />
+    </Grid>
+</Page>

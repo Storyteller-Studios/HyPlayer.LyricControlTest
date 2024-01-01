@@ -1,0 +1,71 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:HyPlayer.LyricControlTest.LyricControl.Implements"
+    xmlns:ui="using:Microsoft.Toolkit.Uwp.UI">
+
+    <Style x:Name="LyricTextStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="40" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style TargetType="local:TextLyricControl">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:TextLyricControl">
+                    <ContentPresenter>
+                        <Grid>
+                            <Border x:Name="ShadowTarget" />
+                            <TextBlock
+                                x:Name="LyricTextBlock"
+                                Margin="0,16"
+                                FontFamily="{TemplateBinding FontFamily}"
+                                Foreground="{TemplateBinding Foreground}"
+                                Opacity="0.6"
+                                Style="{ThemeResource LyricTextStyle}"
+                                Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TextLyricLine.Text}"
+                                TextAlignment="Center"
+                                TextWrapping="WrapWholeWords">
+                                <ui:Effects.Shadow>
+                                    <ui:AttachedDropShadow
+                                        x:Name="LyricShadow"
+                                        Opacity="{Binding ElementName=ShadowTarget, Path=Opacity}"
+                                        Offset="2" />
+                                </ui:Effects.Shadow>
+                            </TextBlock>
+                        </Grid>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" >
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="LyricTextBlock" 
+                                                                       Storyboard.TargetProperty="Opacity">
+                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" Value="0.6" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowTarget" 
+                                                                       Storyboard.TargetProperty="Opacity">
+                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" Value="0" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Active" >
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="LyricTextBlock" 
+                                                                       Storyboard.TargetProperty="Opacity">
+                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" Value="1" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowTarget" 
+                                                                       Storyboard.TargetProperty="Opacity">
+                                            <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" Value="0.5" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                    </ContentPresenter>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

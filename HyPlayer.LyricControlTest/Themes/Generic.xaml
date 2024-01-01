@@ -1,0 +1,15 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:HyPlayer.LyricControlTest">
+    <ResourceDictionary.MergedDictionaries>
+        <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+        <ResourceDictionary Source="/LyricControl/Implements/TextLyricControl.xaml"/>
+        <ResourceDictionary Source="/LyricControl/Implements/EmptyLyricControl.xaml"/>
+        <ResourceDictionary Source="/LyricListView/LyricListView.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+
+
+
+</ResourceDictionary>
