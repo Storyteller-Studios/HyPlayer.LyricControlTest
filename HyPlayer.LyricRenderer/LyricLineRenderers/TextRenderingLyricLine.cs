@@ -39,6 +39,7 @@ public class TextRenderingLyricLine : RenderingLyricLine
         session.FillRectangle((float)offset.X, (float)offset.Y, (float)RenderingWidth, (float)RenderingHeight, _isFocusing ? Colors.Blue : Colors.Indigo);
         session.DrawTextLayout(textLayout, (float)offset.X, (float)offset.Y, Colors.Gray);
         session.DrawText(StartTime.ToString(), (float)offset.X, (float)offset.Y, Colors.Yellow);
+        session.DrawText(offset.Y.ToString(), (float)offset.X, (float)offset.Y + 20, Colors.Yellow);
         if (_isFocusing)
         {
             // 做一下扫词

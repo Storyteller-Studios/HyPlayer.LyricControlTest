@@ -121,6 +121,7 @@
     <Compile Include="Abstraction\RawLyricLine.cs" />
     <Compile Include="Abstraction\Render\LineRenderOption.cs" />
     <Compile Include="Abstraction\Render\LineRenderOffset.cs" />
+    <Compile Include="Abstraction\Render\LineRollingCalculator.cs" />
     <Compile Include="Abstraction\Render\RenderingLyricLine.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
@@ -133,6 +134,7 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RollingCalculators\SinRollingCalculator.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
