@@ -186,11 +186,11 @@ namespace HyPlayer.LyricRenderer
             var hiddenLinesCount = 0;
             for (var i = firstIndex; i < RenderingLyricLines.Count; i++)
             {
-                
-                var currentLine = RenderingLyricLines[i];                
+                var currentLine = RenderingLyricLines[i];
                 if (currentLine.Hidden)
                 {
                     hiddenLinesCount++;
+                    _renderOffsets[currentLine.Id].Y = renderedAfterStartPosition;
                     continue;
                 }
 
@@ -209,7 +209,6 @@ namespace HyPlayer.LyricRenderer
                 _renderOffsets[currentLine.Id].Y = renderedAfterStartPosition;
                 if (renderedAfterStartPosition <= _renderingHeight) _itemsToBeRender.Add(currentLine);
                 renderedAfterStartPosition += currentLine.RenderingHeight;
-                
             }
 
             // 算之前的
@@ -314,7 +313,7 @@ namespace HyPlayer.LyricRenderer
 
         private double _sizeChangedWidth;
         private double _sizeChangedHeight;
-        private List<RenderingLyricLine> _renderingLyricLines;
+        private List<RenderingLyricLine> _renderingLyricLines = new();
         private long _currentLyricTime;
         private double _lyricWidthRatio;
         private double _lyricPaddingTopRatio;
@@ -336,14 +335,12 @@ namespace HyPlayer.LyricRenderer
             var file = await fop.PickSingleFileAsync();
             _player.Source = MediaSource.CreateFromStorageFile(file);
             _player.Play();
-            _player.Volume = 0;
-            _player.PlaybackSession.Position = TimeSpan.FromMilliseconds(57586);
             _secondTimer.Start();
             int i = 0;
             RenderingLyricLines = new()
             {
-                new TextRenderingLyricLine()
-                    { StartTime = 0, EndTime = 8830, Id = i++, KeyFrames = [0, 8830], Text = "" },
+                new BreathPointRenderingLyricLine()
+                    { BeatPerMinute = 60, StartTime = 0, EndTime = 8830, Id = i++, KeyFrames = [0, 8830] },
                 new TextRenderingLyricLine()
                 {
                     StartTime = 8841, EndTime = 11787, Id = i++, KeyFrames = [8841, 11787],
@@ -415,8 +412,8 @@ namespace HyPlayer.LyricRenderer
                     StartTime = 57586, EndTime = 63505, Id = i++, KeyFrames = [57586, 63505],
                     Text = "What else should I engrave on my mind?"
                 },
-                new TextRenderingLyricLine()
-                    { StartTime = 63505, EndTime = 65144, Id = i++, KeyFrames = [63505, 65144], Text = "" },
+                new BreathPointRenderingLyricLine()
+                    { BeatPerMinute = 60, StartTime = 63505, EndTime = 65144, Id = i++, KeyFrames = [63505, 65144] },
                 new TextRenderingLyricLine()
                 {
                     StartTime = 65144, EndTime = 68317, Id = i++, KeyFrames = [65144, 68317],
@@ -466,8 +463,8 @@ namespace HyPlayer.LyricRenderer
                     StartTime = 86713, EndTime = 91633, Id = i++, KeyFrames = [86713, 91633],
                     Text = "Burned out in the flame"
                 },
-                new TextRenderingLyricLine()
-                    { StartTime = 91633, EndTime = 92055, Id = i++, KeyFrames = [91633, 92055], Text = "" },
+                new BreathPointRenderingLyricLine()
+                    { BeatPerMinute = 60, StartTime = 91633, EndTime = 92055, Id = i++, KeyFrames = [91633, 92055] },
                 new TextRenderingLyricLine()
                 {
                     StartTime = 92055, EndTime = 96664, Id = i++, KeyFrames = [92055, 96664],
@@ -518,8 +515,10 @@ namespace HyPlayer.LyricRenderer
                     StartTime = 121166, EndTime = 128509, Id = i++, KeyFrames = [121166, 128509],
                     Text = "May all the beauty be blessed"
                 },
-                new TextRenderingLyricLine()
-                    { StartTime = 128509, EndTime = 129505, Id = i++, KeyFrames = [128509, 129505], Text = "" },
+                new BreathPointRenderingLyricLine()
+                {
+                    BeatPerMinute = 60, StartTime = 128509, EndTime = 129505, Id = i++, KeyFrames = [128509, 129505]
+                },
                 new TextRenderingLyricLine()
                 {
                     StartTime = 129505, EndTime = 134142, Id = i++, KeyFrames = [129505, 134142],
@@ -540,8 +539,10 @@ namespace HyPlayer.LyricRenderer
                     StartTime = 149461, EndTime = 155188, Id = i++, KeyFrames = [149461, 155188],
                     Text = "May all the beauty be blessed"
                 },
-                new TextRenderingLyricLine()
-                    { StartTime = 155188, EndTime = 162640, Id = i++, KeyFrames = [155188, 162640], Text = "" },
+                new BreathPointRenderingLyricLine()
+                {
+                    BeatPerMinute = 60, StartTime = 155188, EndTime = 162640, Id = i++, KeyFrames = [155188, 162640]
+                },
                 new TextRenderingLyricLine()
                 {
                     StartTime = 162640, EndTime = 167170, Id = i++, KeyFrames = [162640, 167170],
