@@ -12,6 +12,11 @@ public class BreathPointRenderingLyricLine : RenderingLyricLine
     private const float MinRadius = 5f;
     private const float MaxRadius = 30f;
 
+    public override void GoToReactionState(ReactionState state, long time)
+    {
+        // TODO
+    }
+
     public override bool Render(CanvasDrawingSession session, LineRenderOffset offset, long currentLyricTime)
     {
         if (currentLyricTime <= EndTime && currentLyricTime >= StartTime)

@@ -2,8 +2,7 @@
 using Windows.UI;
 using HyPlayer.LyricRenderer.Abstraction.Render;
 using Microsoft.Graphics.Canvas;
-using System;
-using System.Diagnostics;
+using System.Globalization;
 using Microsoft.Graphics.Canvas.Text;
 using Windows.UI.Text;
 using Microsoft.Graphics.Canvas.Effects;
@@ -33,13 +32,23 @@ public class TextRenderingLyricLine : RenderingLyricLine
         };
     }
 
+    private long _lastReactionTime = 0;
+    private ReactionState _reactionState = ReactionState.Leave;
+
+    public override void GoToReactionState(ReactionState state, long time)
+    {
+        _lastReactionTime = time;
+        _reactionState = state;
+    }
+
     public override bool Render(CanvasDrawingSession session, LineRenderOffset offset, long currentLyricTime)
     {
         var actualTop = (float)offset.Y + (HiddenOnBlur ? 10 : 30);
-        session.FillRectangle((float)offset.X, (float)offset.Y, (float)RenderingWidth, (float)RenderingHeight, _isFocusing ? Colors.Blue : Colors.Indigo);
         session.DrawTextLayout(textLayout, (float)offset.X, actualTop, Colors.Gray);
+        /*
         session.DrawText(StartTime.ToString(), (float)offset.X, (float)offset.Y, Colors.Yellow);
-        session.DrawText(offset.Y.ToString(), (float)offset.X, (float)offset.Y + 20, Colors.Yellow);
+        session.DrawText(offset.Y.ToString(CultureInfo.InvariantCulture), (float)offset.X, (float)offset.Y + 20, Colors.Yellow);
+        */
         if (_isFocusing)
         {
             // 做一下扫词
@@ -48,15 +57,18 @@ public class TextRenderingLyricLine : RenderingLyricLine
             var cl = new CanvasCommandList(session);
             using (CanvasDrawingSession clds = cl.CreateDrawingSession())
             {
-                clds.DrawTextLayout(textLayout, 0, 0, Colors.White);
+                clds.DrawTextLayout(textLayout, 0, 0, Colors.Yellow);
             }
+
             var accentLyric = new CropEffect
             {
                 Source = cl,
-                SourceRectangle = new Rect(textLayout.LayoutBounds.Left, textLayout.LayoutBounds.Top, currentProgress * textLayout.LayoutBounds.Width, textLayout.LayoutBounds.Height),
+                SourceRectangle = new Rect(textLayout.LayoutBounds.Left, textLayout.LayoutBounds.Top,
+                    currentProgress * textLayout.LayoutBounds.Width, textLayout.LayoutBounds.Height),
             };
             session.DrawImage(accentLyric, (float)offset.X, actualTop);
         }
+
         return true;
     }
 
@@ -73,6 +85,7 @@ public class TextRenderingLyricLine : RenderingLyricLine
         {
             Hidden = true;
         }
+
         textFormat = new CanvasTextFormat()
         {
             FontSize = HiddenOnBlur ? 24 : 48,
@@ -95,6 +108,7 @@ public class TextRenderingLyricLine : RenderingLyricLine
         {
             Hidden = true;
         }
+
         _canvasWidth = (float)width;
         _canvasHeight = (float)height;
         textLayout = new CanvasTextLayout(session, Text, textFormat, (float)width, (float)height);

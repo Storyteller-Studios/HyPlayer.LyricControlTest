@@ -8,5 +8,21 @@
     xmlns:xaml="using:Microsoft.Graphics.Canvas.UI.Xaml"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-    <local:LyricRenderView />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <local:LyricRenderView x:Name="RenderView" />
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Click="ButtonBase_OnClick" RightTapped="Button_RightTapped">加载歌词 (左键选歌自动搜索, 右键选择 QRC)</Button>
+            <Button Grid.Column="1" Click="BtnPlayClick">加载歌曲</Button>
+        </Grid>
+    </Grid>
+    
 </Page>
