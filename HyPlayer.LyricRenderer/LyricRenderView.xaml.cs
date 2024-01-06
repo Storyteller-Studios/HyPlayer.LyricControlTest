@@ -49,12 +49,6 @@ namespace HyPlayer.LyricRenderer
             set => _currentLyricTime = value;
         }
 
-        public double ItemSpacing
-        {
-            get => _itemSpacing;
-            set => _itemSpacing = value;
-        }
-
         public double LyricWidthRatio
         {
             get => _lyricWidthRatio;
@@ -134,7 +128,7 @@ namespace HyPlayer.LyricRenderer
                 // 初始化 Offset
                 lrv._renderOffsets[renderingLyricLine.Id] = new LineRenderOffset();
                 lrv._offsetBeforeRolling[renderingLyricLine.Id] = TopLeftPos;
-                TopLeftPos += renderingLyricLine.RenderingHeight + lrv.ItemSpacing;
+                TopLeftPos += renderingLyricLine.RenderingHeight;
                 // 获取 Keyframe
                 lrv._keyFrameRendered[renderingLyricLine.StartTime] = false;
                 lrv._keyFrameRendered[renderingLyricLine.EndTime] = false;
@@ -192,8 +186,8 @@ namespace HyPlayer.LyricRenderer
             var hiddenLinesCount = 0;
             for (var i = firstIndex; i < RenderingLyricLines.Count; i++)
             {
-                var currentLine = RenderingLyricLines[i];
-
+                
+                var currentLine = RenderingLyricLines[i];                
                 if (currentLine.Hidden)
                 {
                     hiddenLinesCount++;
@@ -213,8 +207,9 @@ namespace HyPlayer.LyricRenderer
 
 
                 _renderOffsets[currentLine.Id].Y = renderedAfterStartPosition;
-                renderedAfterStartPosition += currentLine.RenderingHeight + ItemSpacing;
                 if (renderedAfterStartPosition <= _renderingHeight) _itemsToBeRender.Add(currentLine);
+                renderedAfterStartPosition += currentLine.RenderingHeight;
+                
             }
 
             // 算之前的
@@ -223,7 +218,7 @@ namespace HyPlayer.LyricRenderer
                 var currentLine = RenderingLyricLines[i];
                 if (currentLine.Hidden) continue;
                 // 行前也要算一下
-                renderedBeforeStartPosition -= currentLine.RenderingHeight + ItemSpacing;
+                renderedBeforeStartPosition -= currentLine.RenderingHeight;
 
                 if (renderedBeforeStartPosition + currentLine.RenderingHeight > 0) // 可见区域, 需要判断缓动
                 {
@@ -240,7 +235,8 @@ namespace HyPlayer.LyricRenderer
 
                 _renderOffsets[currentLine.Id].Y = renderedBeforeStartPosition;
                 _renderOffsets[currentLine.Id].X = 0;
-                _itemsToBeRender.Add(currentLine);
+                if (renderedBeforeStartPosition + currentLine.RenderingHeight >= 0)
+                    _itemsToBeRender.Add(currentLine);
                 if (i > 0)
                     if (renderedBeforeStartPosition + RenderingLyricLines[i - 1].RenderingHeight < 0)
                         break;
@@ -320,7 +316,6 @@ namespace HyPlayer.LyricRenderer
         private double _sizeChangedHeight;
         private List<RenderingLyricLine> _renderingLyricLines;
         private long _currentLyricTime;
-        private double _itemSpacing;
         private double _lyricWidthRatio;
         private double _lyricPaddingTopRatio;
         private LineRollingCalculator _lineRollingEaseCalculator;
@@ -341,6 +336,8 @@ namespace HyPlayer.LyricRenderer
             var file = await fop.PickSingleFileAsync();
             _player.Source = MediaSource.CreateFromStorageFile(file);
             _player.Play();
+            _player.Volume = 0;
+            _player.PlaybackSession.Position = TimeSpan.FromMilliseconds(57586);
             _secondTimer.Start();
             int i = 0;
             RenderingLyricLines = new()
@@ -607,7 +604,6 @@ namespace HyPlayer.LyricRenderer
                 },
             };
             OnLyricChanged(this, null);
-            ItemSpacing = 30;
             LyricWidthRatio = 1;
             LyricPaddingTopRatio = 0.1;
             LineRollingDuration = 200;
