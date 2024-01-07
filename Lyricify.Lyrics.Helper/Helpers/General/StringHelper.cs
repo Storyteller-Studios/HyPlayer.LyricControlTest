@@ -318,7 +318,7 @@ namespace Lyricify.Lyrics.Helpers.General
 
         public static string RemoveFrontBackBrackets(this string str)
         {
-            if (str == null) return null;
+            if (string.IsNullOrWhiteSpace(str)) return null;
 
             str = str.Trim();
             if (str[0] == '(' || str[0] == '（') str = str[1..];

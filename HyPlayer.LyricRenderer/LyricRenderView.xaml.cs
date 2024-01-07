@@ -80,6 +80,8 @@ namespace HyPlayer.LyricRenderer
         private double _renderingWidth;
         private double _renderingHeight;
 
+        public delegate void OnBeforeRenderDelegate(LyricRenderView view);
+        public event OnBeforeRenderDelegate OnBeforeRender;
 
         public LyricRenderView()
         {
@@ -88,6 +90,16 @@ namespace HyPlayer.LyricRenderer
             _secondTimer.Start();
         }
 
+        public void ReflowTime(long time)
+        {
+            var keys = _keyFrameRendered.Keys.ToArray();
+            foreach (var key in keys)
+            {
+                if (key >= time) _keyFrameRendered[key] = false;
+            }
+            _needRecalculate = true;
+        }
+        
         private bool _needRecalculate = false;
         private bool _needRecalculateSize = false;
 
@@ -198,7 +210,6 @@ namespace HyPlayer.LyricRenderer
                         _needRecalculate = true; // 滚动中, 下一帧继续渲染
                     }
 
-
                 _renderOffsets[currentLine.Id].Y = renderedAfterStartPosition;
                 if (renderedAfterStartPosition <= _renderingHeight) _itemsToBeRender.Add(currentLine);
                 renderedAfterStartPosition += currentLine.RenderingHeight;
@@ -244,7 +255,7 @@ namespace HyPlayer.LyricRenderer
             Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedDrawEventArgs args)
         {
             if (_initializing) return;
-
+            OnBeforeRender?.Invoke(this);
             foreach (var key in _keyFrameRendered.Keys.ToArray())
             {
                 if (key >= CurrentLyricTime || _keyFrameRendered[key]) continue;
@@ -252,6 +263,7 @@ namespace HyPlayer.LyricRenderer
                 _keyFrameRendered[key] = true;
                 _lastKeyFrame = key;
                 // 视图快照
+                if (!_needRecalculate)
                 foreach (var (i, value) in _renderOffsets)
                 {
                     _offsetBeforeRolling[i] = value.Y;
@@ -290,7 +302,7 @@ namespace HyPlayer.LyricRenderer
                 lastRenderedCount = curRenderedCount;
                 curRenderedCount = args.Timing.UpdateCount;
             }
-
+            /*
             args.DrawingSession.DrawText("FPS: " + (curRenderedCount - lastRenderedCount).ToString(), 0, 70,
                 Windows.UI.Colors.White);
             args.DrawingSession.DrawText("Rendering Count: " + (_itemsToBeRender.Count).ToString(), 0, 0,
@@ -299,7 +311,7 @@ namespace HyPlayer.LyricRenderer
             var firstIndex =
                 RenderingLyricLines.FindIndex(x => x.StartTime <= CurrentLyricTime && x.EndTime >= CurrentLyricTime);
             args.DrawingSession.DrawText("CurIndex: " + (firstIndex).ToString(), 0, 50, Windows.UI.Colors.White);
-
+            */
             args.DrawingSession.Dispose();
         }
 

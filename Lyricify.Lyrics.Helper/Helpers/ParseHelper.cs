@@ -40,6 +40,7 @@ namespace Lyricify.Lyrics.Helpers
                 LyricsRawTypes.Yrc => Parsers.YrcParser.Parse(lyrics),
                 LyricsRawTypes.Spotify => Parsers.SpotifyParser.Parse(lyrics),
                 LyricsRawTypes.Musixmatch => Parsers.MusixmatchParser.Parse(lyrics),
+                LyricsRawTypes.ALRC => Parsers.ALRCParser.Parse(lyrics),
                 _ => null,
             };
         }

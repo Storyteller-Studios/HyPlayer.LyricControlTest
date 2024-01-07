@@ -18,7 +18,7 @@
 
         public LyricsAlignment LyricsAlignment { get; }
 
-        public ILineInfo? SubLine { get; }
+        public ILineInfo? SubLine { get; set; }
 
         /// <summary>
         /// <see cref="Text"/> if SubLine not exist, or full lyrics with bracketed subline lyrics
@@ -28,7 +28,7 @@
 
     public interface IFullLineInfo : ILineInfo
     {
-        public Dictionary<string, string> Translations { get; }
+        public Dictionary<string, string?> Translations { get; }
 
         public string? ChineseTranslation { get; }
 

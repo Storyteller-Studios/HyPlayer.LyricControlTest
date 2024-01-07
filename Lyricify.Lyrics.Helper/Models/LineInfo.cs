@@ -102,13 +102,25 @@ namespace Lyricify.Lyrics.Models
         }
 
         private string? _text = null;
-        public string Text => _text ??= SyllableHelper.GetTextFromSyllableList(Syllables);
+        public string Text
+        {
+            get => _text ??= SyllableHelper.GetTextFromSyllableList(Syllables);
+            init => _text = value;
+        }
 
         private int? _startTime = null;
-        public int? StartTime => _startTime ??= Syllables.First().StartTime;
+        public int? StartTime
+        {
+            get => _startTime ??= Syllables.First().StartTime;
+            init => _startTime = value;
+        }
 
         private int? _endTime = null;
-        public int? EndTime => _endTime ??= Syllables.Last().EndTime;
+        public int? EndTime
+        {
+            get => _endTime ??= Syllables.Last().EndTime;
+            init => _endTime = value;
+        }
 
         public LyricsAlignment LyricsAlignment { get; set; } = LyricsAlignment.Unspecified;
 
@@ -186,7 +198,7 @@ namespace Lyricify.Lyrics.Models
             SubLine = lineInfo.SubLine;
         }
 
-        public Dictionary<string, string> Translations { get; set; } = new();
+        public Dictionary<string, string?> Translations { get; set; } = new();
 
         public string? Pronunciation { get; set; }
 
@@ -231,7 +243,7 @@ namespace Lyricify.Lyrics.Models
             }
         }
 
-        public Dictionary<string, string> Translations { get; set; } = new();
+        public Dictionary<string, string?> Translations { get; set; } = new();
 
         public string? Pronunciation { get; set; }
 
@@ -256,6 +268,7 @@ namespace Lyricify.Lyrics.Models
     {
         Unspecified,
         Left,
+        Center,
         Right
     }
 }

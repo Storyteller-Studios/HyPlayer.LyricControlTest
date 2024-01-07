@@ -26,6 +26,8 @@ using Windows.UI.Popups;
 using Lyricify.Lyrics.Helpers;
 using Lyricify.Lyrics.Models;
 using Lyricify.Lyrics.Searchers;
+using Windows.UI.Xaml.Controls.Maps;
+using Windows.Media;
 
 // https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x804 上介绍了“空白页”项模板
 
@@ -77,35 +79,55 @@ namespace HyPlayer.LyricRenderer
             RenderView.LyricWidthRatio = 1;
             RenderView.LyricPaddingTopRatio = 0.1;
             RenderView.CurrentLyricTime = 0;
-            RenderView.LineRollingEaseCalculator = new SinRollingCalculator();
+            RenderView.LineRollingEaseCalculator = new LyricifyRollingCalculator();
         }
 
         private MediaPlayer _player = new MediaPlayer();
-        
         private async void BtnPlayClick(object sender, RoutedEventArgs e)
         {
             FileOpenPicker picker = new FileOpenPicker();
             picker.FileTypeFilter.Add(".mp3");
             var sf = await picker.PickSingleFileAsync();
+            _player.CommandManager.IsEnabled = false;
+            var _systemMediaTransportControls = _player.SystemMediaTransportControls;
+            _systemMediaTransportControls.IsEnabled = false; 
+            _systemMediaTransportControls.IsPlayEnabled = false;
+            _systemMediaTransportControls.IsPauseEnabled = false;
             _player.Source = MediaSource.CreateFromStorageFile(sf);
             _player.Play();
-            var _timer = new Timer(16);
-            _timer.Elapsed += (s, e) => { RenderView.CurrentLyricTime = (long)_player.PlaybackSession.Position.TotalMilliseconds; };
-            _timer.Start();
+            RenderView.OnBeforeRender += (LyricRenderView v) => { v.CurrentLyricTime = (long)_player.PlaybackSession.Position.TotalMilliseconds; };
         }
 
         private async void Button_RightTapped(object sender, RightTappedRoutedEventArgs e)
         {
             FileOpenPicker picker = new FileOpenPicker();
             picker.FileTypeFilter.Add(".qrc");
+            picker.FileTypeFilter.Add(".lrc");
+            picker.FileTypeFilter.Add(".yrc");
+            picker.FileTypeFilter.Add(".alrc");
             var sf = await picker.PickSingleFileAsync();
             var qrc = await FileIO.ReadTextAsync(sf);
-            var lrcs = LrcConverter.Convert(ParseHelper.ParseLyrics(qrc, LyricsRawTypes.Qrc));
+            var lyricType = sf.FileType switch
+            {
+                ".qrc" => LyricsRawTypes.Qrc,
+                ".yrc" => LyricsRawTypes.Yrc,
+                ".lrc" => LyricsRawTypes.Lrc,
+                ".alrc" => LyricsRawTypes.ALRC,
+                _ => LyricsRawTypes.Unknown
+            };
+            var lrcs = LrcConverter.Convert(ParseHelper.ParseLyrics(qrc, lyricType));
             RenderView.RenderingLyricLines = lrcs;
             RenderView.LyricWidthRatio = 1;
             RenderView.LyricPaddingTopRatio = 0.1;
             RenderView.CurrentLyricTime = 0;
-            RenderView.LineRollingEaseCalculator = new SinRollingCalculator();
+            RenderView.LineRollingEaseCalculator = new LyricifyRollingCalculator();
+        }
+
+        private void Button_RightTapped_1(object sender, RightTappedRoutedEventArgs e)
+        {
+            _player.PlaybackSession.Position = TimeSpan.Zero;
+            _player.Play();
+            RenderView.ReflowTime(0);
         }
     }
 }
