@@ -263,7 +263,7 @@ namespace HyPlayer.LyricRenderer
                 _keyFrameRendered[key] = true;
                 _lastKeyFrame = key;
                 // 视图快照
-                if (!_needRecalculate)
+                //if (!_needRecalculate)
                 foreach (var (i, value) in _renderOffsets)
                 {
                     _offsetBeforeRolling[i] = value.Y;
