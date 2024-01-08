@@ -72,6 +72,13 @@ namespace Lyricify.Lyrics.Parsers
                             ? translation
                             : null;
                     syllableLineInfo.Pronunciation = line.Transliteration;
+                    if (syllableLineInfo.Pronunciation is null)
+                    {
+                        if (line.Words?.Any(t=>!string.IsNullOrWhiteSpace(t.Transliteration)) is true)
+                        {
+                            syllableLineInfo.Pronunciation = string.Join(" ", line.Words.Where(t => !string.IsNullOrWhiteSpace(t.Transliteration)).Select(t => t.Transliteration));
+                        }
+                    }
                     foreach (var word in line.Words)
                     {
                         syllableLineInfo.Syllables.Add(new SyllableInfo()

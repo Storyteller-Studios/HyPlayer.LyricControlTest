@@ -18,20 +18,6 @@ public class TextRenderingLyricLine : RenderingLyricLine
     private float _canvasWidth = 0.0f;
     private float _canvasHeight = 0.0f;
 
-    public TextRenderingLyricLine()
-    {
-        textFormat = new CanvasTextFormat()
-        {
-            FontSize = HiddenOnBlur ? 24 : 48,
-            HorizontalAlignment = CanvasHorizontalAlignment.Left,
-            VerticalAlignment = CanvasVerticalAlignment.Top,
-            WordWrapping = CanvasWordWrapping.Wrap,
-            Direction = CanvasTextDirection.LeftToRightThenTopToBottom,
-            FontFamily = "Microsoft YaHei UI",
-            FontWeight = HiddenOnBlur ? FontWeights.Normal : FontWeights.Bold
-        };
-    }
-
     private long _lastReactionTime = 0;
     private ReactionState _reactionState = ReactionState.Leave;
 
@@ -86,23 +72,23 @@ public class TextRenderingLyricLine : RenderingLyricLine
             Hidden = true;
         }
 
-        textFormat = new CanvasTextFormat()
-        {
-            FontSize = HiddenOnBlur ? 24 : 48,
-            HorizontalAlignment = CanvasHorizontalAlignment.Left,
-            VerticalAlignment = CanvasVerticalAlignment.Top,
-            WordWrapping = CanvasWordWrapping.Wrap,
-            Direction = CanvasTextDirection.LeftToRightThenTopToBottom,
-            FontFamily = "Microsoft YaHei UI",
-            FontWeight = HiddenOnBlur ? FontWeights.Normal : FontWeights.Bold
-        };
+        textFormat ??= new CanvasTextFormat()
+            {
+                FontSize = HiddenOnBlur ? 24 : 48,
+                HorizontalAlignment = CanvasHorizontalAlignment.Left,
+                VerticalAlignment = CanvasVerticalAlignment.Top,
+                WordWrapping = CanvasWordWrapping.Wrap,
+                Direction = CanvasTextDirection.LeftToRightThenTopToBottom,
+                FontFamily = "Microsoft YaHei UI",
+                FontWeight = HiddenOnBlur ? FontWeights.Normal : FontWeights.Bold
+            };
         if (_canvasWidth == 0.0f) return;
         textLayout = new CanvasTextLayout(session, Text, textFormat, _canvasWidth, _canvasHeight);
         RenderingHeight = textLayout.LayoutBounds.Height + (HiddenOnBlur ? 10 : 30);
         RenderingWidth = textLayout.LayoutBounds.Width + 10;
     }
 
-    public override void OnRenderSizeChanged(CanvasDrawingSession session, double width, double height)
+    public override void OnRenderSizeChanged(CanvasDrawingSession session, double width, double height, long time)
     {
         if (HiddenOnBlur && !_isFocusing)
         {
@@ -111,8 +97,6 @@ public class TextRenderingLyricLine : RenderingLyricLine
 
         _canvasWidth = (float)width;
         _canvasHeight = (float)height;
-        textLayout = new CanvasTextLayout(session, Text, textFormat, (float)width, (float)height);
-        RenderingHeight = textLayout.LayoutBounds.Height + (HiddenOnBlur ? 10 : 30);
-        RenderingWidth = textLayout.LayoutBounds.Width + 10;
+        OnKeyFrame(session,time);
     }
 }

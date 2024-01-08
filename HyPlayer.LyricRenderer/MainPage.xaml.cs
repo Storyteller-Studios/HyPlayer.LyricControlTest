@@ -28,6 +28,7 @@ using Lyricify.Lyrics.Models;
 using Lyricify.Lyrics.Searchers;
 using Windows.UI.Xaml.Controls.Maps;
 using Windows.Media;
+using HyPlayer.LyricRenderer.Abstraction.Render;
 
 // https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x804 上介绍了“空白页”项模板
 
@@ -39,14 +40,20 @@ namespace HyPlayer.LyricRenderer
     public sealed partial class MainPage : Page
     {
 
-        private List<ILyricLine> _lyricLines = new()
+        public List<LineRollingCalculator> rollingCalculators = new List<LineRollingCalculator>()
         {
-            
+            new SinRollingCalculator(),
+            new ElasticEaseRollingCalculator(),
+            new LyricifyRollingCalculator(),
         };
 
         public MainPage()
         {
             this.InitializeComponent();
+            RenderView.LyricWidthRatio = 1;
+            RenderView.LyricPaddingTopRatio = 0.1;
+            RenderView.CurrentLyricTime = 0;
+            RenderView.LineRollingEaseCalculator = new LyricifyRollingCalculator();
         }
 
         private async void ButtonBase_OnClick(object sender, RoutedEventArgs e)
@@ -76,10 +83,6 @@ namespace HyPlayer.LyricRenderer
             
             var lrcs = LrcConverter.Convert(ParseHelper.ParseLyrics(lyricData.Lyrics, LyricsRawTypes.Qrc));
             RenderView.RenderingLyricLines = lrcs;
-            RenderView.LyricWidthRatio = 1;
-            RenderView.LyricPaddingTopRatio = 0.1;
-            RenderView.CurrentLyricTime = 0;
-            RenderView.LineRollingEaseCalculator = new LyricifyRollingCalculator();
         }
 
         private MediaPlayer _player = new MediaPlayer();
@@ -117,10 +120,6 @@ namespace HyPlayer.LyricRenderer
             };
             var lrcs = LrcConverter.Convert(ParseHelper.ParseLyrics(qrc, lyricType));
             RenderView.RenderingLyricLines = lrcs;
-            RenderView.LyricWidthRatio = 1;
-            RenderView.LyricPaddingTopRatio = 0.1;
-            RenderView.CurrentLyricTime = 0;
-            RenderView.LineRollingEaseCalculator = new LyricifyRollingCalculator();
         }
 
         private void Button_RightTapped_1(object sender, RightTappedRoutedEventArgs e)
@@ -128,6 +127,11 @@ namespace HyPlayer.LyricRenderer
             _player.PlaybackSession.Position = TimeSpan.Zero;
             _player.Play();
             RenderView.ReflowTime(0);
+        }
+
+        private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            RenderView.LineRollingEaseCalculator = e.AddedItems[0] as LineRollingCalculator;
         }
     }
 }

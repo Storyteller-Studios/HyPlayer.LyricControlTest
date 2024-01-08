@@ -18,13 +18,13 @@ public static class LrcConverter
         {
             var line = lines[index];
         parseLine:
-            if (line is SyllableLineInfo syllableLineInfo)
+            if (line is FullSyllableLineInfo syllableLineInfo)
             {
                 var syllables = syllableLineInfo.Syllables.Select(t => new RenderingSyllable
                 {
                     Syllable = t.Text,
                     StartTime = t.StartTime,
-                    EndTime = t.EndTime
+                    EndTime = t.EndTime,                    
                 }).ToList();
                 if (!string.IsNullOrWhiteSpace(line.FullText) || syllables.Count > 0)
                 {
@@ -34,12 +34,14 @@ public static class LrcConverter
                         HiddenOnBlur = isSubLine,
                         KeyFrames =
                         [
-                            line.StartTimeWithSubLine.Value,
-                            line.EndTimeWithSubLine.Value
+                            syllableLineInfo.StartTimeWithSubLine.Value,
+                            syllableLineInfo.EndTimeWithSubLine.Value
                         ],
-                        StartTime = line.StartTimeWithSubLine.Value,
-                        EndTime = line.EndTimeWithSubLine.Value,
-                        Syllables = syllables
+                        StartTime = syllableLineInfo.StartTimeWithSubLine.Value,
+                        EndTime = syllableLineInfo.EndTimeWithSubLine.Value,
+                        Syllables = syllables,
+                        Transliteration = syllableLineInfo.Pronunciation,
+                        Translation = syllableLineInfo.ChineseTranslation
                     });
                 }
                 else

@@ -24,6 +24,7 @@ using Windows.Storage.Pickers;
 using Windows.Media.Core;
 using Windows.UI;
 using HyPlayer.LyricRenderer.RollingCalculators;
+using Lyricify.Lyrics.Helpers.Types;
 
 //https://go.microsoft.com/fwlink/?LinkId=234236 上介绍了“用户控件”项模板
 
@@ -70,7 +71,7 @@ namespace HyPlayer.LyricRenderer
             get => _lineRollingEaseCalculator;
             set => _lineRollingEaseCalculator = value;
         }
-        
+
 
 
         private const double Epsilon = 0.001;
@@ -99,7 +100,7 @@ namespace HyPlayer.LyricRenderer
             }
             _needRecalculate = true;
         }
-        
+
         private bool _needRecalculate = false;
         private bool _needRecalculateSize = false;
 
@@ -127,7 +128,7 @@ namespace HyPlayer.LyricRenderer
             lrv._targetingKeyFrames.Clear();
             lrv._renderOffsets.Clear();
             double TopLeftPos = lrv._sizeChangedHeight * lrv.LyricPaddingTopRatio;
-
+            lrv._keyFrameRendered[0] = false;
             foreach (var renderingLyricLine in lrv.RenderingLyricLines)
             {
                 // 初始化 Offset
@@ -164,7 +165,7 @@ namespace HyPlayer.LyricRenderer
             var itemWidth = _renderingWidth * LyricWidthRatio;
             foreach (var renderingLyricLine in RenderingLyricLines)
             {
-                renderingLyricLine.OnRenderSizeChanged(session, itemWidth, _renderingHeight);
+                renderingLyricLine.OnRenderSizeChanged(session, itemWidth, _renderingHeight, _currentLyricTime);
             }
         }
 
@@ -229,9 +230,10 @@ namespace HyPlayer.LyricRenderer
                         Math.Abs(_offsetBeforeRolling[currentLine.Id] - renderedBeforeStartPosition) > Epsilon)
                     {
                         renderedBeforeStartPosition = LineRollingEaseCalculator.CalculateCurrentY(
-                            _offsetBeforeRolling[currentLine.Id], renderedBeforeStartPosition, i - firstIndex,
-                            _lastKeyFrame,
-                            CurrentLyricTime);
+                        _offsetBeforeRolling[currentLine.Id], renderedBeforeStartPosition, i - firstIndex,
+                        _lastKeyFrame,
+                        CurrentLyricTime);
+
                         _needRecalculate = true; // 滚动中, 下一帧继续渲染
                     }
                 }
@@ -258,9 +260,11 @@ namespace HyPlayer.LyricRenderer
             OnBeforeRender?.Invoke(this);
             foreach (var key in _keyFrameRendered.Keys.ToArray())
             {
-                if (key >= CurrentLyricTime || _keyFrameRendered[key]) continue;
+                if (_keyFrameRendered[key] == true) continue;
+                if (key >= CurrentLyricTime && key != 0) continue;
                 // 该 KeyFrame 尚未渲染
                 _keyFrameRendered[key] = true;
+                //if (!_needRecalculate)
                 _lastKeyFrame = key;
                 // 视图快照
                 //if (!_needRecalculate)
@@ -269,7 +273,9 @@ namespace HyPlayer.LyricRenderer
                     _offsetBeforeRolling[i] = value.Y;
                 }
 
-                foreach (var renderingLyricLine in _targetingKeyFrames[key])
+                var targets = key == 0 ? _renderingLyricLines : _targetingKeyFrames[key];
+
+                foreach (var renderingLyricLine in targets)
                 {
                     renderingLyricLine.OnKeyFrame(args.DrawingSession, key);
                 }
@@ -329,6 +335,6 @@ namespace HyPlayer.LyricRenderer
             _sizeChangedWidth = e.NewSize.Width;
             _sizeChangedHeight = e.NewSize.Height;
         }
-        
+
     }
 }

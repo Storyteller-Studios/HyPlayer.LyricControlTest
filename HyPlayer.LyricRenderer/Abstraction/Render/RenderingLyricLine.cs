@@ -20,7 +20,7 @@ public abstract class RenderingLyricLine
     public abstract void GoToReactionState(ReactionState state, long time);
     public abstract bool Render(CanvasDrawingSession session, LineRenderOffset offset, long currentLyricTime);
     public abstract void OnKeyFrame(CanvasDrawingSession session,long time);
-    public abstract void OnRenderSizeChanged(CanvasDrawingSession session, double width, double height);
+    public abstract void OnRenderSizeChanged(CanvasDrawingSession session, double width, double height, long time);
 }
 
 public enum ReactionState

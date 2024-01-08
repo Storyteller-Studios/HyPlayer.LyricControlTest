@@ -12,10 +12,10 @@ public class SinRollingCalculator : LineRollingCalculator
     {
         var progress = Math.Clamp((currentTime - startTime) * 1.0 / AnimationDuration, 0 , 1);
         
-        if (!(fromY < targetY) && gap > 0)
+        if (!(fromY < targetY) && gap >= 0)
         {
             // 往下走, 用正弦函数
-            progress = Math.Clamp((currentTime - startTime) * 1.0 / (AnimationDuration * (Math.Log10(gap) + 1)), 0, 1);
+            progress = Math.Clamp((currentTime - startTime) * 1.0 / (AnimationDuration * (Math.Log10(Math.Max(gap,0.9)) + 1)), 0, 1);
         }
         return fromY + (targetY - fromY) * progress;
     }

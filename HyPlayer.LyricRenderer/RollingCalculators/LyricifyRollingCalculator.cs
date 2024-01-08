@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-// Copyright WXRIW, in Lyiricify
+// Copyright WXRIW, in Lyricify
 
 namespace HyPlayer.LyricRenderer.RollingCalculators
 {
@@ -39,11 +39,19 @@ namespace HyPlayer.LyricRenderer.RollingCalculators
         public override double CalculateCurrentY(double fromY, double targetY, int gap, long startTime,
             long currentTime)
         {
-            var progress = Math.Clamp((currentTime - startTime) / duration, 0, 1);
+            var progress = 1.0;
+            
             if (!(fromY < targetY) && gap >= 0)
             {
-                // 往下走, 用正弦函数
-                progress = Math.Clamp(f(progress), 0, 1); ;
+                var theoryDuration = (duration /* * (Math.Log10(Math.Max(gap, 0.9)) + 1)*/);
+                progress = Math.Clamp((currentTime - startTime) / theoryDuration, 0, 1);
+                progress = 1 - progress;
+                progress = f(progress);
+                progress = 1 - progress;
+            }
+            else
+            {
+                progress = Math.Clamp((currentTime - startTime)*1.0 / 300, 0, 1);
             }
             return fromY + (targetY - fromY) * progress;
         }

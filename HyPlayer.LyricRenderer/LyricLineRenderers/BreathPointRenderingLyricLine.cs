@@ -50,7 +50,7 @@ public class BreathPointRenderingLyricLine : RenderingLyricLine
         }
     }
 
-    public override void OnRenderSizeChanged(CanvasDrawingSession session, double width, double height)
+    public override void OnRenderSizeChanged(CanvasDrawingSession session, double width, double height, long time)
     {
         if (HiddenOnBlur && !_isFocusing)
         {
