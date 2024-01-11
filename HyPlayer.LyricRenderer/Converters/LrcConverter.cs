@@ -17,14 +17,16 @@ public static class LrcConverter
         for (var index = 0; index < lines.Count; index++)
         {
             var line = lines[index];
-        parseLine:
+            parseLine:
+            long endTime = line.EndTimeWithSubLine.GetValueOrDefault(-1);
+            if (endTime is -1) endTime = lines.Count > index + 1 ? lines[index + 1].StartTimeWithSubLine.GetValueOrDefault(0) : int.MaxValue;
             if (line is FullSyllableLineInfo syllableLineInfo)
             {
                 var syllables = syllableLineInfo.Syllables.Select(t => new RenderingSyllable
                 {
                     Syllable = t.Text,
                     StartTime = t.StartTime,
-                    EndTime = t.EndTime,                    
+                    EndTime = t.EndTime,
                 }).ToList();
                 if (!string.IsNullOrWhiteSpace(line.FullText) || syllables.Count > 0)
                 {
@@ -34,11 +36,11 @@ public static class LrcConverter
                         HiddenOnBlur = isSubLine,
                         KeyFrames =
                         [
-                            syllableLineInfo.StartTimeWithSubLine.Value,
-                            syllableLineInfo.EndTimeWithSubLine.Value
+                            syllableLineInfo.StartTimeWithSubLine.GetValueOrDefault(0),
+                            endTime
                         ],
-                        StartTime = syllableLineInfo.StartTimeWithSubLine.Value,
-                        EndTime = syllableLineInfo.EndTimeWithSubLine.Value,
+                        StartTime = syllableLineInfo.StartTimeWithSubLine.GetValueOrDefault(0),
+                        EndTime = endTime,
                         Syllables = syllables,
                         Transliteration = syllableLineInfo.Pronunciation,
                         Translation = syllableLineInfo.ChineseTranslation
@@ -47,14 +49,14 @@ public static class LrcConverter
                 else
                     result.Add(new BreathPointRenderingLyricLine
                     {
-                        Id = index+ (isSubLine ? lines.Count : 0),
+                        Id = index + (isSubLine ? lines.Count : 0),
                         KeyFrames =
                         [
-                            line.StartTimeWithSubLine.Value,
-                            line.EndTimeWithSubLine.Value
+                            line.StartTimeWithSubLine.GetValueOrDefault(0),
+                            endTime
                         ],
-                        StartTime = line.StartTimeWithSubLine.Value,
-                        EndTime = line.EndTimeWithSubLine.Value,
+                        StartTime = line.StartTimeWithSubLine.GetValueOrDefault(0),
+                        EndTime = endTime,
                         HiddenOnBlur = true,
                         BeatPerMinute = 160
                     });
@@ -70,33 +72,38 @@ public static class LrcConverter
                 continue;
             }
 
+            
             if (!string.IsNullOrWhiteSpace(line.FullText))
+            {
+                
                 result.Add(new TextRenderingLyricLine
                 {
-                    Id = index+ (isSubLine ? lines.Count : 0),
+                    Id = index + (isSubLine ? lines.Count : 0),
                     KeyFrames =
                     [
-                        line.StartTimeWithSubLine.Value,
-                        line.EndTimeWithSubLine.Value
+                        line.StartTimeWithSubLine.GetValueOrDefault(0),
+                        endTime
                     ],
-                    StartTime = line.StartTimeWithSubLine.Value,
-                    EndTime = line.EndTimeWithSubLine.Value,
+                    StartTime = line.StartTimeWithSubLine.GetValueOrDefault(0),
+                    EndTime = endTime,
                     Text = line.FullText
                 });
+            }
             else
                 result.Add(new BreathPointRenderingLyricLine
                 {
-                    Id = index+ (isSubLine ? lines.Count : 0),
+                    Id = index + (isSubLine ? lines.Count : 0),
                     KeyFrames =
                     [
-                        line.StartTimeWithSubLine.Value,
-                        line.EndTimeWithSubLine.Value
+                        line.StartTimeWithSubLine.GetValueOrDefault(0),
+                        endTime
                     ],
-                    StartTime = line.StartTimeWithSubLine.Value,
-                    EndTime = line.EndTimeWithSubLine.Value,
+                    StartTime = line.StartTimeWithSubLine.GetValueOrDefault(0),
+                    EndTime = endTime,
                     HiddenOnBlur = true,
                     BeatPerMinute = 160
                 });
+
             if (line.SubLine is not null)
             {
                 line = line.SubLine;

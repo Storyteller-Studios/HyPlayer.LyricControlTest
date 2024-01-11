@@ -20,7 +20,10 @@
                 <ColumnDefinition />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="0" Click="ButtonBase_OnClick" RightTapped="Button_RightTapped">加载歌词 (左键选歌自动搜索, 右键选择本地歌词)</Button>
+            <Button
+                Grid.Column="0"
+                Click="ButtonBase_OnClick"
+                RightTapped="Button_RightTapped">加载歌词 (左键选择本地歌词, 右键选歌自动搜索)</Button>
             <Button Grid.Column="1" Click="BtnPlayClick" RightTapped="Button_RightTapped_1">加载歌曲</Button>
             <ComboBox
                 Grid.Column="2"

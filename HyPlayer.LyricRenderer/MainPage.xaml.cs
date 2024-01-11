@@ -59,30 +59,23 @@ namespace HyPlayer.LyricRenderer
         private async void ButtonBase_OnClick(object sender, RoutedEventArgs e)
         {
             FileOpenPicker picker = new FileOpenPicker();
-            picker.FileTypeFilter.Add(".mp3");
+            picker.FileTypeFilter.Add(".qrc");
+            picker.FileTypeFilter.Add(".lrc");
+            picker.FileTypeFilter.Add(".yrc");
+            picker.FileTypeFilter.Add(".alrc");
             var sf = await picker.PickSingleFileAsync();
-            var musicProp = await sf.Properties.GetMusicPropertiesAsync();
-
-            var search = await Searchers.QQMusic.GetNewSearcher().SearchForResult(new TrackMetadata
+            var qrc = await FileIO.ReadTextAsync(sf);
+            var lyricType = sf.FileType switch
             {
-                Title = musicProp.Title,
-                Artist = musicProp.Artist,
-                Album = musicProp.Album,
-            });
-            if (search is not QQMusicSearchResult searchResult)
-            {
-                await new MessageDialog("未找到歌曲").ShowAsync();
-                return;
-            }
-            var lyricData = await ProviderHelper.QQMusicApi.GetLyricsAsync(searchResult.Id.ToString());
-            if (lyricData is null)
-            {
-                await new MessageDialog("未找到歌词").ShowAsync();
-                return;
-            }
-            
-            var lrcs = LrcConverter.Convert(ParseHelper.ParseLyrics(lyricData.Lyrics, LyricsRawTypes.Qrc));
+                ".qrc" => LyricsRawTypes.Qrc,
+                ".yrc" => LyricsRawTypes.Yrc,
+                ".lrc" => LyricsRawTypes.Lrc,
+                ".alrc" => LyricsRawTypes.ALRC,
+                _ => LyricsRawTypes.Unknown
+            };
+            var lrcs = LrcConverter.Convert(ParseHelper.ParseLyrics(qrc, lyricType));
             RenderView.RenderingLyricLines = lrcs;
+           
         }
 
         private MediaPlayer _player = new MediaPlayer();
@@ -104,21 +97,29 @@ namespace HyPlayer.LyricRenderer
         private async void Button_RightTapped(object sender, RightTappedRoutedEventArgs e)
         {
             FileOpenPicker picker = new FileOpenPicker();
-            picker.FileTypeFilter.Add(".qrc");
-            picker.FileTypeFilter.Add(".lrc");
-            picker.FileTypeFilter.Add(".yrc");
-            picker.FileTypeFilter.Add(".alrc");
+            picker.FileTypeFilter.Add(".mp3");
             var sf = await picker.PickSingleFileAsync();
-            var qrc = await FileIO.ReadTextAsync(sf);
-            var lyricType = sf.FileType switch
+            var musicProp = await sf.Properties.GetMusicPropertiesAsync();
+
+            var search = await Searchers.QQMusic.GetNewSearcher().SearchForResult(new TrackMetadata
             {
-                ".qrc" => LyricsRawTypes.Qrc,
-                ".yrc" => LyricsRawTypes.Yrc,
-                ".lrc" => LyricsRawTypes.Lrc,
-                ".alrc" => LyricsRawTypes.ALRC,
-                _ => LyricsRawTypes.Unknown
-            };
-            var lrcs = LrcConverter.Convert(ParseHelper.ParseLyrics(qrc, lyricType));
+                Title = musicProp.Title,
+                Artist = musicProp.Artist,
+                Album = musicProp.Album,
+            });
+            if (search is not QQMusicSearchResult searchResult)
+            {
+                await new MessageDialog("未找到歌曲").ShowAsync();
+                return;
+            }
+            var lyricData = await ProviderHelper.QQMusicApi.GetLyricsAsync(searchResult.Id.ToString());
+            if (lyricData is null)
+            {
+                await new MessageDialog("未找到歌词").ShowAsync();
+                return;
+            }
+
+            var lrcs = LrcConverter.Convert(ParseHelper.ParseLyrics(lyricData.Lyrics, LyricsRawTypes.Qrc));
             RenderView.RenderingLyricLines = lrcs;
         }
 
