@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
+using FontStyle = Windows.UI.Text.FontStyle;
 
 namespace HyPlayer.LyricRenderer.Abstraction.Render;
 

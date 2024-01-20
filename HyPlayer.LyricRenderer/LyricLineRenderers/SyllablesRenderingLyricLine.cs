@@ -13,6 +13,7 @@ using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas.Text;
 using System.Diagnostics;
+using Windows.UI.Xaml;
 
 namespace HyPlayer.LyricRenderer.LyricLineRenderers
 {
@@ -26,7 +27,8 @@ namespace HyPlayer.LyricRenderer.LyricLineRenderers
     public class SyllablesRenderingLyricLine : RenderingLyricLine
     {
         private CanvasTextFormat textFormat;
-        private CanvasTextFormat attachmentFormat;
+        private CanvasTextFormat translationFormat;
+        private CanvasTextFormat transliterationFormat;
         private CanvasTextLayout textLayout;
 
         private CanvasTextLayout? tl;
@@ -53,16 +55,16 @@ namespace HyPlayer.LyricRenderer.LyricLineRenderers
             if (tll != null)
             {
                 actualTop += HiddenOnBlur ? 10 : 0;
-                session.DrawTextLayout(tll, (float)offset.X, actualTop, _isFocusing ? Colors.White : Colors.Gray);
+                session.DrawTextLayout(tll, (float)offset.X, actualTop, _isFocusing ? FocusingColor : IdleColor);
                 actualTop += (float)tll.LayoutBounds.Height;
             }
             var textTop = actualTop;
-            session.DrawTextLayout(textLayout, (float)offset.X, actualTop, Colors.Gray);
+            session.DrawTextLayout(textLayout, (float)offset.X, actualTop, IdleColor);
             actualTop += (float)textLayout.LayoutBounds.Height;
 
             if (tl != null)
             {
-                session.DrawTextLayout(tl, (float)offset.X, actualTop, _isFocusing ? Colors.White : Colors.Gray);
+                session.DrawTextLayout(tl, (float)offset.X, actualTop, _isFocusing ? FocusingColor : IdleColor);
             }
 
             
@@ -71,7 +73,7 @@ namespace HyPlayer.LyricRenderer.LyricLineRenderers
                 var highlightGeometry = CreateHighlightGeometry(currentLyricTime, textLayout, session);
                 var textGeometry = CanvasGeometry.CreateText(textLayout);
                 var highlightTextGeometry = highlightGeometry.CombineWith(textGeometry, Matrix3x2.Identity, CanvasGeometryCombine.Intersect);
-                session.FillGeometry(highlightTextGeometry, (float)offset.X, textTop, Colors.Yellow);
+                session.FillGeometry(highlightTextGeometry, (float)offset.X, textTop, FocusingColor);
             }
             return true;
         }
@@ -128,67 +130,11 @@ namespace HyPlayer.LyricRenderer.LyricLineRenderers
         {
             // skip
             _isFocusing = (time >= StartTime && time < EndTime);
-            Hidden = false;
-            if (HiddenOnBlur && !_isFocusing)
-            {
-                Hidden = true;
-            }
-
-            var add = 0.0;
+            Hidden = HiddenOnBlur && !_isFocusing;
 
             if (_canvasWidth == 0.0f) return;
             if (textFormat is null)
-                textFormat = new CanvasTextFormat()
-                {
-                    FontSize = HiddenOnBlur ? 24 : 48,
-                    HorizontalAlignment = CanvasHorizontalAlignment.Left,
-                    VerticalAlignment = CanvasVerticalAlignment.Top,
-                    WordWrapping = CanvasWordWrapping.Wrap,
-                    Direction = CanvasTextDirection.LeftToRightThenTopToBottom,
-                    FontFamily = "Microsoft YaHei UI",
-                    FontWeight = HiddenOnBlur ? FontWeights.Normal : FontWeights.Bold
-                };
-
-
-
-            if (!string.IsNullOrWhiteSpace(Transliteration) || !string.IsNullOrWhiteSpace(Translation))
-            {
-                if (attachmentFormat is null)
-                    attachmentFormat = new CanvasTextFormat()
-                    {
-                        FontSize = HiddenOnBlur ? 18 : 24,
-                        HorizontalAlignment = CanvasHorizontalAlignment.Left,
-                        VerticalAlignment = CanvasVerticalAlignment.Top,
-                        WordWrapping = CanvasWordWrapping.Wrap,
-                        Direction = CanvasTextDirection.LeftToRightThenTopToBottom,
-                        FontFamily = "Microsoft YaHei UI",
-                        FontWeight = FontWeights.Normal
-                    };
-                if (!string.IsNullOrWhiteSpace(Transliteration) && tll is null)
-                {
-                    tll = new CanvasTextLayout(session, Transliteration, attachmentFormat, _canvasWidth, _canvasHeight);
-                    add += 30;
-                }
-
-                if (!string.IsNullOrWhiteSpace(Translation) && tl is null)
-                {
-                    tl = new CanvasTextLayout(session, Translation, attachmentFormat, _canvasWidth, _canvasHeight);
-                    add += 30;
-                }
-                add += tll?.LayoutBounds.Height ?? 0;
-                add += tl?.LayoutBounds.Height ?? 0;
-            }
-            if (textLayout is null || _sizeChanged)
-            {
-                _sizeChanged = false;
-                _text = string.Join("", Syllables.Select(t => t.Syllable));
-                textLayout = new CanvasTextLayout(session, _text, textFormat, _canvasWidth, _canvasHeight);
-            }
-            if (textLayout is not null)
-            {
-                RenderingHeight = textLayout.LayoutBounds.Height + (HiddenOnBlur ? 10 : 30) + add;
-                RenderingWidth = textLayout.LayoutBounds.Width + 10;
-            }
+                OnTypographyChanged(session);
         }
 
         public bool HiddenOnBlur { get; set; }
@@ -205,6 +151,87 @@ namespace HyPlayer.LyricRenderer.LyricLineRenderers
             _canvasWidth = (float)width;
             _canvasHeight = (float)height;
             OnKeyFrame(session, time);
+            OnTypographyChanged(session);
+        }
+
+        public override void OnTypographyChanged(CanvasDrawingSession session)
+        {
+            var add = 0.0;
+            textFormat = new CanvasTextFormat()
+            {
+                FontSize = (float)(HiddenOnBlur ? LyricFontSize / 2 : LyricFontSize),
+                HorizontalAlignment = TextAlignment switch
+                {
+                    TextAlignment.Right => CanvasHorizontalAlignment.Right,
+                    TextAlignment.Center => CanvasHorizontalAlignment.Center,
+                    _ => CanvasHorizontalAlignment.Left
+                },
+                VerticalAlignment = CanvasVerticalAlignment.Top,
+                WordWrapping = CanvasWordWrapping.Wrap,
+                Direction = CanvasTextDirection.LeftToRightThenTopToBottom,
+                FontFamily = "Microsoft YaHei UI",
+                FontWeight = HiddenOnBlur ? FontWeights.Normal : FontWeights.Bold
+            };
+
+
+
+            if (!string.IsNullOrWhiteSpace(Transliteration) || !string.IsNullOrWhiteSpace(Translation))
+            {
+                
+                if (!string.IsNullOrWhiteSpace(Transliteration))
+                {
+                    transliterationFormat = new CanvasTextFormat()
+                    {
+                        FontSize = (float)(HiddenOnBlur ? TransliterationFontSize / 2 : TransliterationFontSize),
+                        HorizontalAlignment = TextAlignment switch
+                        {
+                            TextAlignment.Right => CanvasHorizontalAlignment.Right,
+                            TextAlignment.Center => CanvasHorizontalAlignment.Center,
+                            _ => CanvasHorizontalAlignment.Left
+                        },
+                        VerticalAlignment = CanvasVerticalAlignment.Top,
+                        WordWrapping = CanvasWordWrapping.Wrap,
+                        Direction = CanvasTextDirection.LeftToRightThenTopToBottom,
+                        FontFamily = "Microsoft YaHei UI",
+                        FontWeight = FontWeights.Normal
+                    };
+                    tll = new CanvasTextLayout(session, Transliteration, transliterationFormat, _canvasWidth, _canvasHeight);
+                    add += 10;
+                }
+
+                if (!string.IsNullOrWhiteSpace(Translation))
+                {
+                    translationFormat = new CanvasTextFormat()
+                    {
+                        FontSize = (float)(HiddenOnBlur ? TranslationFontSize / 2 : TranslationFontSize),
+                        HorizontalAlignment = TextAlignment switch
+                        {
+                            TextAlignment.Right => CanvasHorizontalAlignment.Right,
+                            TextAlignment.Center => CanvasHorizontalAlignment.Center,
+                            _ => CanvasHorizontalAlignment.Left
+                        },
+                        VerticalAlignment = CanvasVerticalAlignment.Top,
+                        WordWrapping = CanvasWordWrapping.Wrap,
+                        Direction = CanvasTextDirection.LeftToRightThenTopToBottom,
+                        FontFamily = "Microsoft YaHei UI",
+                        FontWeight = FontWeights.Normal
+                    };
+                    tl = new CanvasTextLayout(session, Translation, translationFormat, _canvasWidth, _canvasHeight);
+                    add += 30;
+                }
+                add += tll?.LayoutBounds.Height ?? 0;
+                add += tl?.LayoutBounds.Height ?? 0;
+            }
+            if (textLayout is null || _sizeChanged)
+            {
+                _sizeChanged = false;
+                _text = string.Join("", Syllables.Select(t => t.Syllable));
+                textLayout = new CanvasTextLayout(session, _text, textFormat, _canvasWidth, _canvasHeight);
+            }
+
+            if (textLayout is null) return;
+            RenderingHeight = textLayout.LayoutBounds.Height + (HiddenOnBlur ? 10 : 30) + add;
+            RenderingWidth = textLayout.LayoutBounds.Width + 10;
         }
     }
 }

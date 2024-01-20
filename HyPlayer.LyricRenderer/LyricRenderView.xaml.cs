@@ -1,30 +1,14 @@
 ﻿using HyPlayer.LyricRenderer.Abstraction.Render;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Timers;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.Core;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using HyPlayer.LyricRenderer.LyricLineRenderers;
 using Microsoft.Graphics.Canvas;
 using System.Diagnostics;
-using Windows.Media.Playback;
-using Windows.Storage.Pickers;
-using Windows.Media.Core;
-using Windows.UI;
-using HyPlayer.LyricRenderer.RollingCalculators;
-using Lyricify.Lyrics.Helpers.Types;
+using HyPlayer.LyricRenderer.LyricLineRenderers;
 
 //https://go.microsoft.com/fwlink/?LinkId=234236 上介绍了“用户控件”项模板
 
@@ -73,7 +57,6 @@ namespace HyPlayer.LyricRenderer
         }
 
 
-
         private const double Epsilon = 0.001;
 
         private Dictionary<int, LineRenderOffset> _renderOffsets = new();
@@ -81,14 +64,59 @@ namespace HyPlayer.LyricRenderer
         private double _renderingWidth;
         private double _renderingHeight;
 
-        public delegate void OnBeforeRenderDelegate(LyricRenderView view);
-        public event OnBeforeRenderDelegate OnBeforeRender;
+        public delegate void BeforeRenderDelegate(LyricRenderView view);
+
+        public event BeforeRenderDelegate OnBeforeRender;
 
         public LyricRenderView()
         {
             this.InitializeComponent();
             _secondTimer.Elapsed += SecondTimerOnElapsed;
             _secondTimer.Start();
+        }
+
+        private bool _isTypographyChanged = true;
+
+        public void ChangeRenderColor(Color idleColor, Color focusingColor)
+        {
+            foreach (var renderingLyricLine in _renderingLyricLines)
+            {
+                renderingLyricLine.FocusingColor = focusingColor;
+                renderingLyricLine.IdleColor = idleColor;
+                _isTypographyChanged = true;
+            }
+        }
+
+        public void ChangeRenderFontSize(double lyricSize, double translationSize, double transliterationSize)
+        {
+            foreach (var renderingLyricLine in _renderingLyricLines)
+            {
+                renderingLyricLine.LyricFontSize = lyricSize;
+                renderingLyricLine.TranslationFontSize = translationSize;
+                renderingLyricLine.TransliterationFontSize = transliterationSize;
+                _isTypographyChanged = true;
+            }
+        }
+
+        public void ChangeAlignment(TextAlignment alignment)
+        {
+            foreach (var renderingLyricLine in _renderingLyricLines)
+            {
+                renderingLyricLine.TextAlignment = alignment;
+                _isTypographyChanged = true;
+            }
+        }
+
+        public void ChangeBeatPerMinute(double beatPerMinute)
+        {
+            foreach (var renderingLyricLine in _renderingLyricLines)
+            {
+                if (renderingLyricLine is BreathPointRenderingLyricLine bprl)
+                {
+                    bprl.BeatPerMinute = beatPerMinute;
+                }
+                _isTypographyChanged = true;
+            }
         }
 
         public void ReflowTime(long time)
@@ -98,6 +126,7 @@ namespace HyPlayer.LyricRenderer
             {
                 if (key >= time) _keyFrameRendered[key] = false;
             }
+
             _needRecalculate = true;
         }
 
@@ -159,6 +188,8 @@ namespace HyPlayer.LyricRenderer
             lrv._needRecalculateSize = true;
             lrv._needRecalculate = true;
         }
+
+
 
         private void RecalculateItemsSize(CanvasDrawingSession session)
         {
@@ -230,9 +261,9 @@ namespace HyPlayer.LyricRenderer
                         Math.Abs(_offsetBeforeRolling[currentLine.Id] - renderedBeforeStartPosition) > Epsilon)
                     {
                         renderedBeforeStartPosition = LineRollingEaseCalculator.CalculateCurrentY(
-                        _offsetBeforeRolling[currentLine.Id], renderedBeforeStartPosition, i - firstIndex,
-                        _lastKeyFrame,
-                        CurrentLyricTime);
+                            _offsetBeforeRolling[currentLine.Id], renderedBeforeStartPosition, i - firstIndex,
+                            _lastKeyFrame,
+                            CurrentLyricTime);
 
                         _needRecalculate = true; // 滚动中, 下一帧继续渲染
                     }
@@ -248,16 +279,20 @@ namespace HyPlayer.LyricRenderer
             }
         }
 
-        // DEBUG
-        private long lastRenderedCount = 0;
-        private long curRenderedCount = 0;
-        private int lastUpdateSecond = 0;
-
         private void LyricView_Draw(Microsoft.Graphics.Canvas.UI.Xaml.ICanvasAnimatedControl sender,
             Microsoft.Graphics.Canvas.UI.Xaml.CanvasAnimatedDrawEventArgs args)
         {
             if (_initializing) return;
             OnBeforeRender?.Invoke(this);
+            if (_isTypographyChanged)
+            {
+                _isTypographyChanged = false;
+                foreach (var renderingLyricLine in _renderingLyricLines)
+                {
+                    renderingLyricLine.OnTypographyChanged(args.DrawingSession);
+                }
+            }
+
             foreach (var key in _keyFrameRendered.Keys.ToArray())
             {
                 if (_keyFrameRendered[key] == true) continue;
@@ -300,24 +335,6 @@ namespace HyPlayer.LyricRenderer
             {
                 renderingLyricLine.Render(args.DrawingSession, _renderOffsets[renderingLyricLine.Id], CurrentLyricTime);
             }
-
-            var curSec = ((int)args.Timing.TotalTime.TotalSeconds);
-            if (curSec != lastUpdateSecond)
-            {
-                lastUpdateSecond = curSec;
-                lastRenderedCount = curRenderedCount;
-                curRenderedCount = args.Timing.UpdateCount;
-            }
-            /*
-            args.DrawingSession.DrawText("FPS: " + (curRenderedCount - lastRenderedCount).ToString(), 0, 70,
-                Windows.UI.Colors.White);
-            args.DrawingSession.DrawText("Rendering Count: " + (_itemsToBeRender.Count).ToString(), 0, 0,
-                Windows.UI.Colors.White);
-            args.DrawingSession.DrawText("CurTime: " + (CurrentLyricTime).ToString(), 0, 20, Windows.UI.Colors.White);
-            var firstIndex =
-                RenderingLyricLines.FindIndex(x => x.StartTime <= CurrentLyricTime && x.EndTime >= CurrentLyricTime);
-            args.DrawingSession.DrawText("CurIndex: " + (firstIndex).ToString(), 0, 50, Windows.UI.Colors.White);
-            */
             args.DrawingSession.Dispose();
         }
 
@@ -335,6 +352,5 @@ namespace HyPlayer.LyricRenderer
             _sizeChangedWidth = e.NewSize.Width;
             _sizeChangedHeight = e.NewSize.Height;
         }
-
     }
 }

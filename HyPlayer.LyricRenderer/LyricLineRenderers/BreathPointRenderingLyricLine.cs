@@ -58,4 +58,9 @@ public class BreathPointRenderingLyricLine : RenderingLyricLine
         }
         RenderingHeight = MaxRadius + 80;
     }
+
+    public override void OnTypographyChanged(CanvasDrawingSession session)
+    {
+        // ignore
+    }
 }
