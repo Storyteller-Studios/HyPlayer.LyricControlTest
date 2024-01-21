@@ -10,7 +10,8 @@
                         <ProgressBar
                             x:Name="MainProgressBar"
                             Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
-                            IsIndeterminate="True" />
+                            MaxWidth="512"
+                            IsIndeterminate="False" />
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal">

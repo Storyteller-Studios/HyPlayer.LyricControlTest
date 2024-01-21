@@ -3,4 +3,5 @@
 public interface ITextLyricLine
 {
     string? Text { get; }
+    string? Translation { get; }
 }

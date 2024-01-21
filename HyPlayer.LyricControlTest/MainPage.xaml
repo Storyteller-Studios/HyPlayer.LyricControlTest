@@ -12,6 +12,17 @@
     xmlns:models="using:HyPlayer.LyricControlTest.Lyric"
     xmlns:ui="using:Microsoft.Toolkit.Uwp.UI">
     <Grid Margin="0,0">
-        <view:LyricListView LyricLines="{x:Bind ViewModel.LyricLines}"  />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <view:LyricListView x:Name="LyricView"  LyricLines="{x:Bind ViewModel.LyricLines}"  />
+        <Grid Grid.Row="1" Padding="16,0">
+            <StackPanel Spacing="8" VerticalAlignment="Center" Canvas.ZIndex="1">
+                <Button x:Name="MusicBtn" Click="MusicBtn_Click" Content="选择音乐"/>
+                <Button x:Name="LyricBtn" Click="LyricBtn_Click" Content="选择歌词"/>
+            </StackPanel>
+            <MediaPlayerElement x:Name="Player" AreTransportControlsEnabled="True" HorizontalAlignment="Stretch" />
+        </Grid>
     </Grid>
 </Page>

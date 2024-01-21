@@ -14,12 +14,21 @@
             <Setter.Value>
                 <ControlTemplate TargetType="local:TextLyricControl">
                     <ContentPresenter>
-                        <Grid>
+                        <Grid
+                            x:Name="LyricGrid"
+                            Padding="16,20"
+                            ui:VisualExtensions.NormalizedCenterPoint="0.5,0.5"
+                            RenderTransformOrigin="0.5,0.5">
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
                             <Border x:Name="ShadowTarget" />
                             <TextBlock
                                 x:Name="LyricTextBlock"
-                                Margin="0,16"
+                                Grid.Row="0"
                                 FontFamily="{TemplateBinding FontFamily}"
+                                FontSize="42"
                                 Foreground="{TemplateBinding Foreground}"
                                 Opacity="0.6"
                                 Style="{ThemeResource LyricTextStyle}"
@@ -33,29 +42,66 @@
                                         Offset="2" />
                                 </ui:Effects.Shadow>
                             </TextBlock>
+                            <TextBlock
+                                Grid.Row="1"
+                                x:Name="TranslationTextBlock"
+                                FontSize="22"
+                                FontWeight="SemiBold"                            
+                                Opacity="{Binding ElementName=LyricTextBlock, Path=Opacity}"
+                                Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TextLyricLine.Translation}"
+                                TextAlignment="Center"
+                                TextWrapping="WrapWholeWords" />
+                            <Grid.RenderTransform>
+                                <ScaleTransform />
+                            </Grid.RenderTransform>
                         </Grid>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal" >
+                                <VisualState x:Name="Normal">
                                     <Storyboard>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="LyricTextBlock" 
-                                                                       Storyboard.TargetProperty="Opacity">
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="LyricTextBlock" Storyboard.TargetProperty="Opacity">
                                             <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" Value="0.6" />
                                         </DoubleAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowTarget" 
-                                                                       Storyboard.TargetProperty="Opacity">
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="LyricGrid" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)">
+                                            <EasingDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" Value="0.8">
+                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                    <CircleEase EasingMode="EaseOut" />
+                                                </EasingDoubleKeyFrame.EasingFunction>
+                                            </EasingDoubleKeyFrame>
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="LyricGrid" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)">
+                                            <EasingDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" Value="0.8">
+                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                    <CircleEase EasingMode="EaseOut" />
+                                                </EasingDoubleKeyFrame.EasingFunction>
+                                            </EasingDoubleKeyFrame>
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowTarget" Storyboard.TargetProperty="Opacity">
                                             <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" Value="0" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
-                                <VisualState x:Name="Active" >
+                                <VisualState x:Name="Active">
                                     <Storyboard>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="LyricTextBlock" 
-                                                                       Storyboard.TargetProperty="Opacity">
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="LyricTextBlock" Storyboard.TargetProperty="Opacity">
                                             <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" Value="1" />
                                         </DoubleAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowTarget" 
-                                                                       Storyboard.TargetProperty="Opacity">
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="LyricGrid" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)">
+                                            <EasingDoubleKeyFrame KeyTime="00:00:00.400" Value="1">
+                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                    <CircleEase EasingMode="EaseOut" />
+                                                </EasingDoubleKeyFrame.EasingFunction>
+                                            </EasingDoubleKeyFrame>
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="LyricGrid" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)">
+                                            <EasingDoubleKeyFrame KeyTime="00:00:00.400" Value="1">
+                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                    <CircleEase EasingMode="EaseOut" />
+                                                </EasingDoubleKeyFrame.EasingFunction>
+                                            </EasingDoubleKeyFrame>
+                                        </DoubleAnimationUsingKeyFrames>
+
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetName="ShadowTarget" Storyboard.TargetProperty="Opacity">
                                             <SplineDoubleKeyFrame KeyTime="{StaticResource ControlNormalAnimationDuration}" Value="0.5" />
                                         </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>

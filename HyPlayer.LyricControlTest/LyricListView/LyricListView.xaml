@@ -1,31 +1,34 @@
 ﻿<ResourceDictionary
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
-    xmlns:local="using:HyPlayer.LyricControlTest.LyricListView"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:base="using:HyPlayer.LyricControlTest.Lyric.Base"
-    xmlns:models="using:HyPlayer.LyricControlTest.Lyric"
+    xmlns:local="using:HyPlayer.LyricControlTest.LyricListView"
     xmlns:lyric="using:HyPlayer.LyricControlTest.LyricControl.Implements"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:models="using:HyPlayer.LyricControlTest.Lyric"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
     <DataTemplate x:Key="EmptyLyricTemplate">
-        <lyric:EmptyLyricControl EmptyLyricLine="{Binding}"/>
+        <lyric:EmptyLyricControl EmptyLyricLine="{Binding}" />
     </DataTemplate>
-    <DataTemplate x:Key="TextLyricTemplate" >
-        <lyric:TextLyricControl TextLyricLine="{Binding}"/>
+    <DataTemplate x:Key="TextLyricTemplate">
+        <lyric:TextLyricControl TextLyricLine="{Binding}" />
     </DataTemplate>
     <DataTemplate x:Key="KaraokeTemplate">
-        <Border/>
+        <Border />
     </DataTemplate>
-    <Style TargetType="local:LyricListView" >
+    <Style TargetType="local:LyricListView">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:LyricListView">
-                    <ListView x:Name="LyricContainer"             
-                        ItemsSource="{TemplateBinding LyricLines}">
+                    <ListView
+                        x:Name="LyricContainer"
+                        IsItemClickEnabled="True"
+                        ItemsSource="{TemplateBinding LyricLines}"
+                        SelectionMode="None">
                         <ListView.ItemTemplateSelector>
                             <local:LyricDataTemplateSelector
                                 Empty="{StaticResource EmptyLyricTemplate}"
-                                Text="{StaticResource TextLyricTemplate}"
-                                Karaoke="{StaticResource KaraokeTemplate}"/>
+                                Karaoke="{StaticResource KaraokeTemplate}"
+                                Text="{StaticResource TextLyricTemplate}" />
                         </ListView.ItemTemplateSelector>
                     </ListView>
                 </ControlTemplate>
