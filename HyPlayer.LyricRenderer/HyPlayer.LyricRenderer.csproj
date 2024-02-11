@@ -129,7 +129,6 @@
     <Compile Include="Converters\LrcConverter.cs" />
     <Compile Include="LyricLineRenderers\BreathPointRenderingLyricLine.cs" />
     <Compile Include="LyricLineRenderers\SyllablesRenderingLyricLine.cs" />
-    <Compile Include="LyricLineRenderers\TextRenderingLyricLine.cs" />
     <Compile Include="LyricRenderView.xaml.cs">
       <DependentUpon>LyricRenderView.xaml</DependentUpon>
     </Compile>

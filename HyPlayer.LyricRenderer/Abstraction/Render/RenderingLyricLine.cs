@@ -19,7 +19,7 @@ public abstract class RenderingLyricLine
     public double LyricFontSize { get; set; } = 48;
 
     public double TranslationFontSize { get; set; } = 24;
-    
+
     public double TransliterationFontSize { get; set; } = 24;
 
     public bool Hidden { get; set; }
@@ -31,8 +31,8 @@ public abstract class RenderingLyricLine
     public TextAlignment TextAlignment { get; set; } = TextAlignment.Left;
 
     public abstract void GoToReactionState(ReactionState state, long time);
-    public abstract bool Render(CanvasDrawingSession session, LineRenderOffset offset, long currentLyricTime);
-    public abstract void OnKeyFrame(CanvasDrawingSession session,long time);
+    public abstract bool Render(CanvasDrawingSession session, LineRenderOffset offset, long currentLyricTime, long renderingTick, int gap);
+    public abstract void OnKeyFrame(CanvasDrawingSession session, long time);
     public abstract void OnRenderSizeChanged(CanvasDrawingSession session, double width, double height, long time);
     public abstract void OnTypographyChanged(CanvasDrawingSession session);
 }

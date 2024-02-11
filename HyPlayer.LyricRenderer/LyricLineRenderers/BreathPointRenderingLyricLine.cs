@@ -17,7 +17,7 @@ public class BreathPointRenderingLyricLine : RenderingLyricLine
         // TODO
     }
 
-    public override bool Render(CanvasDrawingSession session, LineRenderOffset offset, long currentLyricTime)
+    public override bool Render(CanvasDrawingSession session, LineRenderOffset offset, long currentLyricTime, long renderingTick, int gap)
     {
         if (currentLyricTime <= EndTime && currentLyricTime >= StartTime)
         {

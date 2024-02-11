@@ -54,6 +54,7 @@ namespace HyPlayer.LyricRenderer
             RenderView.LyricPaddingTopRatio = 0.1;
             RenderView.CurrentLyricTime = 0;
             RenderView.LineRollingEaseCalculator = new LyricifyRollingCalculator();
+            RenderView.ChangeRenderFontSize(64, 32, 16);
         }
 
         private async void ButtonBase_OnClick(object sender, RoutedEventArgs e)
@@ -84,11 +85,6 @@ namespace HyPlayer.LyricRenderer
             FileOpenPicker picker = new FileOpenPicker();
             picker.FileTypeFilter.Add(".mp3");
             var sf = await picker.PickSingleFileAsync();
-            _player.CommandManager.IsEnabled = false;
-            var _systemMediaTransportControls = _player.SystemMediaTransportControls;
-            _systemMediaTransportControls.IsEnabled = false; 
-            _systemMediaTransportControls.IsPlayEnabled = false;
-            _systemMediaTransportControls.IsPauseEnabled = false;
             _player.Source = MediaSource.CreateFromStorageFile(sf);
             _player.Play();
             RenderView.OnBeforeRender += (LyricRenderView v) => { v.CurrentLyricTime = (long)_player.PlaybackSession.Position.TotalMilliseconds; };

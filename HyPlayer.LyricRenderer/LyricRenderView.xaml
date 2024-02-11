@@ -7,12 +7,17 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:win2d="using:Microsoft.Graphics.Canvas.UI.Xaml"
     mc:Ignorable="d"
+    Unloaded="LyricRenderView_OnUnloaded"
     d:DesignHeight="300"
     d:DesignWidth="400">
 
 
     <win2d:CanvasAnimatedControl
         x:Name="LyricView"
+        PointerExited="LyricView_OnPointerExited"
+        PointerPressed="LyricView_OnPointerPressed"
+        PointerWheelChanged="LyricView_OnPointerWheelChanged"
         SizeChanged="LyricView_OnSizeChanged"
+        PointerMoved="LyricView_OnPointerMoved"
         Draw="LyricView_Draw" />
 </UserControl>
