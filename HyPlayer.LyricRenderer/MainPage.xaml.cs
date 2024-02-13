@@ -19,7 +19,6 @@ using Windows.UI.Xaml.Navigation;
 using Windows.Storage.Pickers;
 using HyPlayer.LyricRenderer.Converters;
 using HyPlayer.LyricRenderer.RollingCalculators;
-using ILyricLine = HyPlayer.LyricRenderer.Abstraction.ILyricLine;
 using System.Diagnostics;
 using System.Timers;
 using Windows.UI.Popups;
@@ -50,10 +49,10 @@ namespace HyPlayer.LyricRenderer
         public MainPage()
         {
             this.InitializeComponent();
-            RenderView.LyricWidthRatio = 1;
-            RenderView.LyricPaddingTopRatio = 0.1;
-            RenderView.CurrentLyricTime = 0;
-            RenderView.LineRollingEaseCalculator = new LyricifyRollingCalculator();
+            RenderView.Context.LyricWidthRatio = 1;
+            RenderView.Context.LyricPaddingTopRatio = 0.1;
+            RenderView.Context.CurrentLyricTime = 0;
+            RenderView.Context.LineRollingEaseCalculator = new LyricifyRollingCalculator();
             RenderView.ChangeRenderFontSize(64, 32, 16);
         }
 
@@ -75,7 +74,7 @@ namespace HyPlayer.LyricRenderer
                 _ => LyricsRawTypes.Unknown
             };
             var lrcs = LrcConverter.Convert(ParseHelper.ParseLyrics(qrc, lyricType));
-            RenderView.RenderingLyricLines = lrcs;
+            RenderView.SetLyricLines(lrcs);
            
         }
 
@@ -87,7 +86,7 @@ namespace HyPlayer.LyricRenderer
             var sf = await picker.PickSingleFileAsync();
             _player.Source = MediaSource.CreateFromStorageFile(sf);
             _player.Play();
-            RenderView.OnBeforeRender += (LyricRenderView v) => { v.CurrentLyricTime = (long)_player.PlaybackSession.Position.TotalMilliseconds; };
+            RenderView.OnBeforeRender += (LyricRenderView v) => { v.Context.CurrentLyricTime = (long)_player.PlaybackSession.Position.TotalMilliseconds; };
         }
 
         private async void Button_RightTapped(object sender, RightTappedRoutedEventArgs e)
@@ -116,7 +115,7 @@ namespace HyPlayer.LyricRenderer
             }
 
             var lrcs = LrcConverter.Convert(ParseHelper.ParseLyrics(lyricData.Lyrics, LyricsRawTypes.Qrc));
-            RenderView.RenderingLyricLines = lrcs;
+            RenderView.SetLyricLines(lrcs);
         }
 
         private void Button_RightTapped_1(object sender, RightTappedRoutedEventArgs e)
@@ -128,7 +127,7 @@ namespace HyPlayer.LyricRenderer
 
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            RenderView.LineRollingEaseCalculator = e.AddedItems[0] as LineRollingCalculator;
+            RenderView.Context.LineRollingEaseCalculator = e.AddedItems[0] as LineRollingCalculator;
         }
     }
 }

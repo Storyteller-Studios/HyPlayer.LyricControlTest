@@ -20,6 +20,8 @@
         public int EndTime { get; set; }
 
         public int Duration => EndTime - StartTime;
+
+        public string? Transliteration { get; set; }
     }
 
     public class FullSyllableInfo : ISyllableInfo

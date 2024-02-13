@@ -79,13 +79,14 @@ namespace Lyricify.Lyrics.Parsers
                             syllableLineInfo.Pronunciation = string.Join(" ", line.Words.Where(t => !string.IsNullOrWhiteSpace(t.Transliteration)).Select(t => t.Transliteration));
                         }
                     }
-                    foreach (var word in line.Words)
+                    foreach (var word in line.Words ?? new List<ALRCWord>())
                     {
                         syllableLineInfo.Syllables.Add(new SyllableInfo()
                         {
                             StartTime = (int)word.Start,
                             EndTime = (int)word.End,
-                            Text = word.Word
+                            Text = word.Word,
+                            Transliteration = word.Transliteration
                         });
                     }
 

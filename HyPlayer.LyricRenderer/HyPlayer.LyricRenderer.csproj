@@ -117,9 +117,8 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Abstraction\ILyricLine.cs" />
-    <Compile Include="Abstraction\RawLyricLine.cs" />
-    <Compile Include="Abstraction\Render\LineRenderOption.cs" />
+    <Compile Include="Abstraction\RenderContext.cs" />
+    <Compile Include="Abstraction\RenderTypography.cs" />
     <Compile Include="Abstraction\Render\LineRenderOffset.cs" />
     <Compile Include="Abstraction\Render\LineRollingCalculator.cs" />
     <Compile Include="Abstraction\Render\RenderingLyricLine.cs" />
@@ -128,6 +127,7 @@
     </Compile>
     <Compile Include="Converters\LrcConverter.cs" />
     <Compile Include="LyricLineRenderers\BreathPointRenderingLyricLine.cs" />
+    <Compile Include="LyricLineRenderers\ProgressBarRenderingLyricLine.cs" />
     <Compile Include="LyricLineRenderers\SyllablesRenderingLyricLine.cs" />
     <Compile Include="LyricRenderView.xaml.cs">
       <DependentUpon>LyricRenderView.xaml</DependentUpon>

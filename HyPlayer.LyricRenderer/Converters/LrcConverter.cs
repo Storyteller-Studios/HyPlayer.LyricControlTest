@@ -28,6 +28,13 @@ public static class LrcConverter
                     StartTime = t.StartTime,
                     EndTime = t.EndTime,
                 }).ToList();
+
+                var transliterationSyllableInfo = syllableLineInfo.Syllables.Cast<SyllableInfo>().Select(t => new RenderingSyllable()
+                {
+                    Syllable = t.Transliteration + " ",
+                    StartTime = t.StartTime,
+                    EndTime = t.EndTime,
+                });
                 if (!string.IsNullOrWhiteSpace(line.FullText) || syllables.Count > 0)
                 {
                     result.Add(new SyllablesRenderingLyricLine
@@ -43,12 +50,13 @@ public static class LrcConverter
                         StartTime = syllableLineInfo.StartTimeWithSubLine.GetValueOrDefault(0),
                         EndTime = endTime,
                         Syllables = syllables,
+                        RomajiSyllables = transliterationSyllableInfo.ToList(),
                         Transliteration = syllableLineInfo.Pronunciation,
                         Translation = syllableLineInfo.ChineseTranslation
                     });
                 }
                 else
-                    result.Add(new BreathPointRenderingLyricLine
+                    result.Add(new ProgressBarRenderingLyricLine
                     {
                         Id = index + (isSubLine ? lines.Count : 0),
                         KeyFrames =
@@ -58,8 +66,7 @@ public static class LrcConverter
                         ],
                         StartTime = line.StartTimeWithSubLine.GetValueOrDefault(0),
                         EndTime = endTime,
-                        HiddenOnBlur = true,
-                        BeatPerMinute = 160
+                        HiddenOnBlur = true
                     });
 
                 if (line.SubLine is not null)
@@ -92,7 +99,7 @@ public static class LrcConverter
                 });
             }
             else
-                result.Add(new BreathPointRenderingLyricLine
+                result.Add(new ProgressBarRenderingLyricLine
                 {
                     Id = index + (isSubLine ? lines.Count : 0),
                     KeyFrames =
@@ -103,7 +110,6 @@ public static class LrcConverter
                     StartTime = line.StartTimeWithSubLine.GetValueOrDefault(0),
                     EndTime = endTime,
                     HiddenOnBlur = true,
-                    BeatPerMinute = 160
                 });
 
             if (line.SubLine is not null)
