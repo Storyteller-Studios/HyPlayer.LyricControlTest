@@ -17,7 +17,6 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.Storage.Pickers;
-using HyPlayer.LyricRenderer.Converters;
 using HyPlayer.LyricRenderer.RollingCalculators;
 using System.Diagnostics;
 using System.Timers;
@@ -27,7 +26,9 @@ using Lyricify.Lyrics.Models;
 using Lyricify.Lyrics.Searchers;
 using Windows.UI.Xaml.Controls.Maps;
 using Windows.Media;
+using ALRC.Converters;
 using HyPlayer.LyricRenderer.Abstraction.Render;
+using LrcConverter = HyPlayer.LyricRenderer.Converters.LrcConverter;
 
 // https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x804 上介绍了“空白页”项模板
 
@@ -50,7 +51,7 @@ namespace HyPlayer.LyricRenderer
         {
             this.InitializeComponent();
             RenderView.Context.LyricWidthRatio = 1;
-            RenderView.Context.LyricPaddingTopRatio = 0.1;
+            RenderView.Context.LyricPaddingTopRatio = 0.1f;
             RenderView.Context.CurrentLyricTime = 0;
             RenderView.Context.LineRollingEaseCalculator = new LyricifyRollingCalculator();
             RenderView.ChangeRenderFontSize(64, 32, 16);
@@ -65,15 +66,16 @@ namespace HyPlayer.LyricRenderer
             picker.FileTypeFilter.Add(".alrc");
             var sf = await picker.PickSingleFileAsync();
             var qrc = await FileIO.ReadTextAsync(sf);
-            var lyricType = sf.FileType switch
+            ILyricConverter<string> converter = sf.FileType switch
             {
-                ".qrc" => LyricsRawTypes.Qrc,
-                ".yrc" => LyricsRawTypes.Yrc,
-                ".lrc" => LyricsRawTypes.Lrc,
-                ".alrc" => LyricsRawTypes.ALRC,
-                _ => LyricsRawTypes.Unknown
+                ".qrc" => new QQLyricConverter(),
+                ".yrc" => new NeteaseYrcConverter(),
+                ".lrc" => new ALRC.Converters.LrcConverter(),
+                ".alrc" => new ALRCConverter(),
+                ".ttml" => new AppleSyllableConverter(),
+                _ => new LyricifySyllableConverter()
             };
-            var lrcs = LrcConverter.Convert(ParseHelper.ParseLyrics(qrc, lyricType));
+            var lrcs = LrcConverter.Convert(converter.Convert(qrc));
             RenderView.SetLyricLines(lrcs);
            
         }
@@ -114,7 +116,7 @@ namespace HyPlayer.LyricRenderer
                 return;
             }
 
-            var lrcs = LrcConverter.Convert(ParseHelper.ParseLyrics(lyricData.Lyrics, LyricsRawTypes.Qrc));
+            var lrcs = LrcConverter.Convert(new QQLyricConverter().Convert(lyricData.Lyrics!));
             RenderView.SetLyricLines(lrcs);
         }
 

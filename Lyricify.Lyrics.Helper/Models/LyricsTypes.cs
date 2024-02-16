@@ -86,11 +86,6 @@
         /// <summary>
         /// Musixmatch Desktop Client API raw JSON data
         /// </summary>
-        Musixmatch = 9,
-        
-        /// <summary>
-        /// ALRC Format
-        /// </summary>
-        ALRC = 10,
+        Musixmatch = 9
     }
 }

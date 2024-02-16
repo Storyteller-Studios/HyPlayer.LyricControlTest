@@ -20,7 +20,7 @@ namespace HyPlayer.LyricRenderer
     {
         public RenderContext Context { get; } = new();
 
-        private const double Epsilon = 0.001;
+        private const float Epsilon = 0.001f;
 
         private readonly Timer _secondTimer = new(500);
 
@@ -48,7 +48,7 @@ namespace HyPlayer.LyricRenderer
             _isTypographyChanged = true;
         }
 
-        public void ChangeRenderFontSize(double lyricSize, double translationSize, double transliterationSize)
+        public void ChangeRenderFontSize(float lyricSize, float translationSize, float transliterationSize)
         {
             Context.PreferTypography.LyricFontSize = lyricSize;
             Context.PreferTypography.TranslationFontSize = translationSize;
@@ -62,7 +62,7 @@ namespace HyPlayer.LyricRenderer
             _isTypographyChanged = true;
         }
 
-        public void ChangeBeatPerMinute(double beatPerMinute)
+        public void ChangeBeatPerMinute(float beatPerMinute)
         {
             Context.BeatPerMinute = beatPerMinute;
             _isTypographyChanged = true;
@@ -111,15 +111,15 @@ namespace HyPlayer.LyricRenderer
             _keyFrameRendered.Clear();
             _targetingKeyFrames.Clear();
             Context.RenderOffsets.Clear();
-            _keyFrameRendered[0] = false; // 将 0 时刻添加到 KeyFrame, 以便初始化时渲染
-
-            // 初始化位置
-            double topleftPosition = Context.ViewHeight * Context.LyricPaddingTopRatio;
+            _keyFrameRendered[0] = false; // 将 0 时刻添加到 KeyFrame, 以便初始化时渲染           
+                                          // 初始化位置
+            float topleftPosition = Context.ViewHeight * Context.LyricPaddingTopRatio;
 
             foreach (var renderingLyricLine in Context.LyricLines)
             {
                 Context.RenderOffsets[renderingLyricLine.Id] = new LineRenderOffset
                 {
+                    X = 4,
                     Y = topleftPosition
                 };
                 Context.SnapshotRenderOffsets[renderingLyricLine.Id] = new LineRenderOffset();
@@ -145,7 +145,6 @@ namespace HyPlayer.LyricRenderer
                     _keyFrameRendered[renderOptionsKey] = false;
                 }
             }
-
             _initializing = false;
         }
 
@@ -172,32 +171,41 @@ namespace HyPlayer.LyricRenderer
             if (Context.CurrentLyricLineIndex < 0) Context.CurrentLyricLineIndex = Context.LyricLines.Count - 1;
             Context.CurrentLyricLine = Context.LyricLines[Context.CurrentLyricLineIndex];
             Context.RenderingLyricLines.Clear();
-            var theoryRenderStartPosition = Context.LyricPaddingTopRatio * Context.ViewHeight + Context.ScrollingDelta;
-            var renderedAfterStartPosition = theoryRenderStartPosition;
-            var renderedBeforeStartPosition = theoryRenderStartPosition;
+            var theoryRenderAfterPosition = Context.LyricPaddingTopRatio * Context.ViewHeight + Context.ScrollingDelta;
+            var theoryRenderBeforePosition = theoryRenderAfterPosition;
+            var renderedAfterStartPosition = theoryRenderAfterPosition;
+            var renderedBeforeStartPosition = theoryRenderAfterPosition;
 
             for (var i = Context.CurrentLyricLineIndex; i < Context.LyricLines.Count; i++)
             {
                 var currentLine = Context.LyricLines[i];
-                if (currentLine.Hidden)
+                if (currentLine.Hidden || Context.CurrentKeyframe == 0)
                 {
-                    Context.RenderOffsets[currentLine.Id].Y = renderedAfterStartPosition;
-                    continue;
+                    Context.RenderOffsets[currentLine.Id].Y = theoryRenderAfterPosition;
                 }
+
+                if (currentLine.Hidden)
+                    continue;
 
                 if (renderedAfterStartPosition <= Context.ViewHeight) // 在可视区域, 需要缓动
                     if (Context.SnapshotRenderOffsets.ContainsKey(currentLine.Id) &&
-                        Math.Abs(Context.SnapshotRenderOffsets[currentLine.Id].Y - renderedAfterStartPosition) >
+                        Math.Abs(theoryRenderAfterPosition - Context.RenderOffsets[currentLine.Id].Y) >
                         Epsilon)
                     {
+
                         renderedAfterStartPosition = Context.LineRollingEaseCalculator.CalculateCurrentY(
-                            Context.SnapshotRenderOffsets[currentLine.Id].Y, renderedAfterStartPosition,
+                            Context.SnapshotRenderOffsets[currentLine.Id].Y, theoryRenderAfterPosition,
                             currentLine, Context);
+                        if (Context.Debug)
+                        {
+                            session.DrawText(renderedAfterStartPosition.ToString(), 0, renderedAfterStartPosition, Colors.Green);
+                        }
                         _needRecalculate = true; // 滚动中, 下一帧继续渲染
                     }
 
                 Context.RenderOffsets[currentLine.Id].Y = renderedAfterStartPosition;
                 if (renderedAfterStartPosition <= Context.ViewHeight) Context.RenderingLyricLines.Add(currentLine);
+                theoryRenderAfterPosition += currentLine.RenderingHeight;
                 renderedAfterStartPosition += currentLine.RenderingHeight;
             }
 
@@ -205,31 +213,41 @@ namespace HyPlayer.LyricRenderer
             for (var i = Context.CurrentLyricLineIndex - 1; i >= 0; i--)
             {
                 var currentLine = Context.LyricLines[i];
-                if (currentLine.Hidden) continue;
-                // 行前也要算一下
-                renderedBeforeStartPosition -= currentLine.RenderingHeight;
-
-                if (renderedBeforeStartPosition + currentLine.RenderingHeight > 0) // 可见区域, 需要判断缓动
+                if (currentLine.Hidden || Context.CurrentKeyframe == 0)
                 {
-                    if (Context.SnapshotRenderOffsets.ContainsKey(currentLine.Id) &&
-                        Math.Abs(Context.SnapshotRenderOffsets[currentLine.Id].Y - renderedBeforeStartPosition) >
-                        Epsilon)
+                    Context.RenderOffsets[currentLine.Id].Y = renderedBeforeStartPosition;
+                    renderedBeforeStartPosition -= currentLine.Hidden ? 0 : currentLine.RenderingHeight;
+                    theoryRenderBeforePosition -= currentLine.Hidden ? 0 : currentLine.RenderingHeight;
+                }
+                if (!currentLine.Hidden && Context.CurrentKeyframe != 0)
+                {
+                    // 行前也要算一下
+                    renderedBeforeStartPosition -= currentLine.RenderingHeight;
+                    theoryRenderBeforePosition -= currentLine.RenderingHeight;
+                    if (renderedBeforeStartPosition + currentLine.RenderingHeight > 0) // 可见区域, 需要判断缓动
                     {
-                        renderedBeforeStartPosition = Context.LineRollingEaseCalculator.CalculateCurrentY(
-                            Context.SnapshotRenderOffsets[currentLine.Id].Y, renderedBeforeStartPosition,
-                            currentLine, Context);
+                        if (Context.SnapshotRenderOffsets.ContainsKey(currentLine.Id) &&
+                            Math.Abs(Context.RenderOffsets[currentLine.Id].Y - theoryRenderBeforePosition) >
+                            Epsilon)
+                        {
+                            renderedBeforeStartPosition = Context.LineRollingEaseCalculator.CalculateCurrentY(
+                                Context.SnapshotRenderOffsets[currentLine.Id].Y, theoryRenderBeforePosition,
+                                currentLine, Context);
 
-                        _needRecalculate = true; // 滚动中, 下一帧继续渲染
+                            _needRecalculate = true; // 滚动中, 下一帧继续渲染
+                        }
+                        if (renderedBeforeStartPosition + currentLine.RenderingHeight > 0) Context.RenderingLyricLines.Add(currentLine);
+                        Context.RenderingLyricLines.Add(currentLine);
                     }
                 }
+                else
+                {
+                    renderedBeforeStartPosition  = theoryRenderBeforePosition;
+                }
+
+                
 
                 Context.RenderOffsets[currentLine.Id].Y = renderedBeforeStartPosition;
-                Context.RenderOffsets[currentLine.Id].X = 4;
-                if (renderedBeforeStartPosition + currentLine.RenderingHeight >= 0)
-                    Context.RenderingLyricLines.Add(currentLine);
-                if (i <= 0) continue;
-                if (renderedBeforeStartPosition + Context.LyricLines[i - 1].RenderingHeight < 0)
-                    break;
             }
         }
 
@@ -284,7 +302,6 @@ namespace HyPlayer.LyricRenderer
                 
                 // 0 时刻渲染所有, 也就是初始化
                 var targets = key == 0 ? Context.LyricLines : _targetingKeyFrames[key];
-
                 foreach (var renderingLyricLine in targets)
                 {
                     renderingLyricLine.OnKeyFrame(args.DrawingSession, Context);
@@ -317,22 +334,22 @@ namespace HyPlayer.LyricRenderer
                 args.DrawingSession.DrawText($"绘制时间: {args.Timing.ElapsedTime}", 0,0, Colors.Yellow);
                 args.DrawingSession.DrawText($"滚动偏移: {Context.ScrollingDelta}", 0, 15, Colors.Yellow);
                 args.DrawingSession.DrawText($"歌词时间: {Context.CurrentLyricTime}", 0, 30, Colors.Yellow);
-                args.DrawingSession.DrawText($"歌词时间: {Context.CurrentLyricTime}", 0, 30, Colors.Yellow);
+                args.DrawingSession.DrawText($"绘制行数: {Context.RenderingLyricLines.Count}", 0, 45, Colors.Yellow);
                 // 绘制绘制边框
-                args.DrawingSession.DrawRectangle(0,0,(float)Context.ViewWidth, (float)Context.ViewHeight, Colors.Red, 5);
+                args.DrawingSession.DrawRectangle(0,0,Context.ViewWidth, Context.ViewHeight, Colors.Red, 5);
             }
             args.DrawingSession.Dispose();
         }
 
 
-        private double _sizeChangedWidth;
-        private double _sizeChangedHeight;
+        private float _sizeChangedWidth;
+        private float _sizeChangedHeight;
 
 
         private void LyricView_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            _sizeChangedWidth = e.NewSize.Width;
-            _sizeChangedHeight = e.NewSize.Height;
+            _sizeChangedWidth = (float)e.NewSize.Width;
+            _sizeChangedHeight = (float)e.NewSize.Height;
         }
 
         private long _lastWheelTime = 0;
