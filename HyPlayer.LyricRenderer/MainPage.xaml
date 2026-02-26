@@ -13,7 +13,15 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <local:LyricRenderView x:Name="RenderView" />
+        <xaml:CanvasAnimatedControl
+            x:Name="CanvasAnimatedControl"
+            PointerExited="LyricView_OnPointerExited"
+            PointerPressed="LyricView_OnPointerPressed"
+            PointerWheelChanged="LyricView_OnPointerWheelChanged"
+            SizeChanged="LyricView_OnSizeChanged"
+            PointerMoved="LyricView_OnPointerMoved"
+            Draw="LyricView_Draw"
+            />
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />

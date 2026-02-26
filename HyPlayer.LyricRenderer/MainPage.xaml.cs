@@ -28,6 +28,7 @@ using Windows.UI.Xaml.Controls.Maps;
 using Windows.Media;
 using ALRC.Converters;
 using HyPlayer.LyricRenderer.Abstraction.Render;
+using Microsoft.Graphics.Canvas.UI.Xaml;
 using LrcConverter = HyPlayer.LyricRenderer.Converters.LrcConverter;
 
 // https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x804 上介绍了“空白页”项模板
@@ -45,15 +46,23 @@ namespace HyPlayer.LyricRenderer
             new SinRollingCalculator(),
             new ElasticEaseRollingCalculator(),
             new LyricifyRollingCalculator(),
+            new SyncRollingCalculator(),
+            new CircleEaseRollingCalculator()
         };
 
+        private LyricRenderView RenderView = new();
+        
         public MainPage()
         {
             this.InitializeComponent();
             RenderView.Context.LyricWidthRatio = 1;
             RenderView.Context.LyricPaddingTopRatio = 0.1f;
             RenderView.Context.CurrentLyricTime = 0;
-            RenderView.Context.LineRollingEaseCalculator = new LyricifyRollingCalculator();
+            RenderView.Context.LineRollingEaseCalculator = new ElasticEaseRollingCalculator();
+            RenderView.Context.LyricPaddingTopRatio = 0;
+            RenderView.Context.CurrentLyricTime = 0;
+            RenderView.Context.Debug = true;
+            RenderView.Context.Effects.Blur = true;
             RenderView.ChangeRenderFontSize(64, 32, 16);
         }
 
@@ -87,6 +96,7 @@ namespace HyPlayer.LyricRenderer
             picker.FileTypeFilter.Add(".mp3");
             var sf = await picker.PickSingleFileAsync();
             _player.Source = MediaSource.CreateFromStorageFile(sf);
+            _player.Volume = 0.2;
             _player.Play();
             RenderView.OnBeforeRender += (LyricRenderView v) => { v.Context.CurrentLyricTime = (long)_player.PlaybackSession.Position.TotalMilliseconds; };
         }
@@ -130,6 +140,39 @@ namespace HyPlayer.LyricRenderer
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             RenderView.Context.LineRollingEaseCalculator = e.AddedItems[0] as LineRollingCalculator;
+        }
+
+        private void LyricView_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            RenderView.LyricView_OnPointerExited(sender, e);
+        }
+
+
+        private void LyricView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            RenderView.LyricView_OnPointerPressed(sender, e);
+        }
+
+
+        private void LyricView_OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
+        {
+            RenderView.LyricView_OnPointerWheelChanged(sender, e);
+        }
+
+        private void LyricView_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            RenderView.Redesign((float)e.NewSize.Width, (float)e.NewSize.Height, CanvasAnimatedControl.Dpi);
+        }
+
+
+        private void LyricView_OnPointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            RenderView.LyricView_OnPointerMoved(sender, e);
+        }
+
+        private void LyricView_Draw(ICanvasAnimatedControl sender, CanvasAnimatedDrawEventArgs args)
+        {
+            RenderView.Draw(args.DrawingSession, args.Timing);
         }
     }
 }

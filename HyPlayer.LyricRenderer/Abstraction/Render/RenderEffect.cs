@@ -1,4 +1,4 @@
-namespace HyPlayer.LyricRenderer.Abstraction.Render;
+﻿namespace HyPlayer.LyricRenderer.Abstraction.Render;
 
 // 特技特技加特技
 public class RenderEffects
@@ -27,4 +27,20 @@ public class RenderEffects
     /// 歌词模糊
     /// </summary>
     public bool Blur { get; set; } = true;
+    
+    /// <summary>
+    /// 歌词渐隐
+    /// </summary>
+    public bool LyricRenderFade { get; set; } = true;
+    
+    /// <summary>
+    /// 歌词渐隐程度
+    /// </summary>
+    public int LyricRenderFadeRatio { get; set; } = 5;
+
+
+    /// <summary>
+    /// 预渲染合成
+    /// </summary>
+    public bool CacheRenderTarget { get; set; } = false;
 }

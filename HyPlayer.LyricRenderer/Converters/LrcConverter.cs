@@ -52,18 +52,13 @@ public static class LrcConverter
                 EndTime = alrcLine.End ?? 0,
                 Text = alrcLine.RawText,
                 Transliteration = alrcLine.Transliteration,
-                Translation = alrcLine.LineTranslations?.FirstOrDefault().Value,
+                Translation = alrcLine.Translation,
             };
             if (alrcLine.Words is { Count: > 0 })
             {
                 line.IsSyllable = true;
-                line.Syllables = alrcLine.Words.Select(w => new RenderingSyllable()
-                {
-                    StartTime = w.Start,
-                    EndTime = w.End,
-                    Syllable = w.Word,
-                    Transliteration = w.Transliteration
-                }).ToList();
+                line.Syllables = alrcLine.Words.Select(w => new RenderingSyllable(
+                     w.Word, w.Start, w.End, w.Transliteration)).ToList();
             }
 
             if (alrc.Header?.Styles?.FirstOrDefault(t => t.Id == alrcLine.LineStyle) is { } style)

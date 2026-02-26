@@ -1,20 +1,21 @@
 ﻿#nullable enable
-using System.Collections.Generic;
 using Microsoft.Graphics.Canvas;
 using System;
+using System.Collections.Generic;
 
 namespace HyPlayer.LyricRenderer.Abstraction.Render;
 
 public abstract class RenderingLyricLine
 {
     public int Id { get; set; }
-    public RenderTypography Typography { get; set; }
+    public RenderTypography? Typography { get; set; }
     public float RenderingHeight { get; set; }
     public float RenderingWidth { get; set; }
+    public bool Rendering { get; set; } = false;
 
     public bool Hidden { get; set; }
 
-    public List<long> KeyFrames { get; set; }
+    public List<long>? KeyFrames { get; set; }
 
     public long StartTime { get; set; }
     public long EndTime { get; set; }
